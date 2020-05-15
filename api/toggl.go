@@ -5,12 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
-
-var ENV_USERNAME = "TOGGL_USERNAME"
-var ENV_PASSWORD = "TOGGL_PASSWORD"
 
 type TogglApi struct {
 	baseUrl string
@@ -37,7 +33,7 @@ func (toggl *TogglApi) GetMe() (me Me, err error) {
 		fmt.Println("[GetMe] Request failed! Error:", err)
 		return
 	} else if resp.StatusCode != 200 {
-		fmt.Println("[GetMe] Request failed with status:", resp.StatusCode)
+		err = errors.New(fmt.Sprintf("[GetMe] Request failed with status: %d", resp.StatusCode))
 		return
 	}
 	defer resp.Body.Close()
@@ -72,7 +68,7 @@ func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) (entries [
 		fmt.Println("[GetTimeEntries] Request failed! Error:", err)
 		return
 	} else if resp.StatusCode != 200 {
-		fmt.Println("[GetTimeEntries] Request failed with status:", resp.StatusCode)
+		err = errors.New(fmt.Sprintf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode))
 		return
 	}
 	defer resp.Body.Close()
@@ -91,7 +87,7 @@ func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[s
 		return
 	}
 
-	err = addBasicAuth(req)
+	err = addBasicAuth(req, "TOGGL_USERNAME", "TOGGL_PASSWORD")
 	if err != nil {
 		return
 	}
@@ -112,32 +108,11 @@ func (toggl *TogglApi) getAuthenticated(path string) (resp *http.Response, err e
 		return
 	}
 
-	err = addBasicAuth(req)
+	err = addBasicAuth(req, "TOGGL_USERNAME", "TOGGL_PASSWORD")
 	if err != nil {
 		return
 	}
 
 	req.Header.Add("Accept", "application/json")
 	return toggl.client.Do(req)
-}
-
-func addBasicAuth(req *http.Request) (err error) {
-	username, ok := os.LookupEnv(ENV_USERNAME)
-	if !ok {
-		err = missingEnv(ENV_USERNAME)
-		return
-	}
-
-	password, ok := os.LookupEnv(ENV_PASSWORD)
-	if !ok {
-		err = missingEnv(ENV_PASSWORD)
-		return
-	}
-
-	req.SetBasicAuth(username, password)
-	return
-}
-
-func missingEnv(env string) error {
-	return errors.New(fmt.Sprintf("%s not specified!", env))
 }
