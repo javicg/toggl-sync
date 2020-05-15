@@ -56,6 +56,15 @@ func validateConfig() {
 func sync() {
 	togglApi := api.NewTogglApi()
 
+	printUserDetails(togglApi)
+
+	trackingDate := requestTrackingDate()
+	entries := getTimeEntriesForDate(togglApi, trackingDate)
+
+	printSummary(entries)
+}
+
+func printUserDetails(togglApi *api.TogglApi) {
 	log.Print("Fetching user details...")
 	me, err := togglApi.GetMe()
 	if err != nil {
@@ -63,7 +72,9 @@ func sync() {
 	}
 
 	log.Printf("User details: Name = %s, Email = %s", me.Data.Fullname, me.Data.Email)
+}
 
+func requestTrackingDate() string {
 	fmt.Print("Introduce a date to fetch time entries (e.g. 2020-05-08) -> ")
 	reader := bufio.NewReader(os.Stdin)
 
@@ -72,8 +83,11 @@ func sync() {
 		log.Fatalf("Error reading input: %s", err)
 	}
 	input = strings.Replace(input, "\n", "", -1)
+	return input
+}
 
-	startDate, err := time.Parse(time.RFC3339, input+"T00:00:00Z")
+func getTimeEntriesForDate(togglApi *api.TogglApi, dateStr string) []api.TimeEntry {
+	startDate, err := time.Parse(time.RFC3339, dateStr+"T00:00:00Z")
 	if err != nil {
 		log.Fatalf("Error parsing input date: %s", err)
 	}
@@ -81,9 +95,12 @@ func sync() {
 	entries, err := togglApi.GetTimeEntries(startDate, startDate.AddDate(0, 0, 1))
 	if err != nil {
 		log.Fatalf("Error retrieving time entries: %s", err)
-		return
 	}
 
+	return entries
+}
+
+func printSummary(entries []api.TimeEntry) {
 	log.Print("== Time Entries Summary ==")
 	for i := range entries {
 		log.Printf("Entry: %s || Duration (s): %d", entries[i].Description, entries[i].Duration)
