@@ -56,6 +56,7 @@ func validateConfig() {
 
 func sync() {
 	togglApi := api.NewTogglApi()
+	jiraApi := api.NewJiraApi()
 
 	printUserDetails(togglApi)
 
@@ -63,7 +64,7 @@ func sync() {
 	entries := getTimeEntriesForDate(togglApi, trackingDate)
 
 	printSummary(entries)
-	logWorkOnJira(entries)
+	logWorkOnJira(togglApi, jiraApi, entries)
 }
 
 func printUserDetails(togglApi *api.TogglApi) {
@@ -109,19 +110,51 @@ func printSummary(entries []api.TimeEntry) {
 	}
 }
 
-func logWorkOnJira(entries []api.TimeEntry) {
+func logWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entries []api.TimeEntry) {
 	log.Print("Logging work on Jira...")
-	jiraApi := api.NewJiraApi()
 	for _, entry := range entries {
 		if strings.HasPrefix(entry.Description, config.GetJiraProjectKey()) {
-			err := jiraApi.LogWork(entry.Description, time.Duration(entry.Duration)*time.Second)
-			if err != nil {
-				log.Printf("No time logged for [%s]; operation failed with an error: %s", entry.Description, err)
-			} else {
-				log.Printf("Successfully logged [%d]s for entry [%s]", entry.Duration, entry.Description)
-			}
+			logProjectWorkOnJira(jiraApi, entry)
 		} else {
-			log.Printf("No time logged for [%s]; logging work outside [%s] not supported yet", entry.Description, config.GetJiraProjectKey())
+			logOverheadWorkOnJira(togglApi, jiraApi, entry)
 		}
 	}
+}
+
+func logProjectWorkOnJira(jiraApi *api.JiraApi, entry api.TimeEntry) {
+	err := jiraApi.LogWork(entry.Description, time.Duration(entry.Duration)*time.Second)
+	if err != nil {
+		log.Printf("No time logged for [%s]; operation failed with an error: %s", entry.Description, err)
+	} else {
+		log.Printf("Successfully logged [%d]s for entry [%s]", entry.Duration, entry.Description)
+	}
+}
+
+func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry api.TimeEntry) {
+	project := togglApi.GetProjectById(entry.Pid)
+	if key := config.GetOverheadKey(project.Data.Name); key == "" {
+		requestOverheadKey(entry, project)
+	}
+
+	key := config.GetOverheadKey(project.Data.Name)
+	err := jiraApi.LogWork(key, time.Duration(entry.Duration)*time.Second)
+	if err != nil {
+		log.Printf("No time logged for [%s] (project [%s]); operation failed with an error: %s", entry.Description, project.Data.Name, err)
+	} else {
+		log.Printf("Successfully logged [%d]s for entry [%s] (project [%s])", entry.Duration, entry.Description, project.Data.Name)
+	}
+}
+
+func requestOverheadKey(entry api.TimeEntry, project api.ProjectData) {
+	fmt.Printf("No configuration found for entry [%s] (project [%s]). Which Jira ticket should be used for this type of work? -> ", entry.Description, project.Data.Name)
+	reader := bufio.NewReader(os.Stdin)
+
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatalf("Error reading input: %s", err)
+	}
+	input = strings.Replace(input, "\n", "", -1)
+
+	log.Printf("Saving configuration: entries for project [%s] will be tracked as [%s] from now on", project.Data.Name, input)
+	config.SetOverheadKey(project.Data.Name, input)
 }

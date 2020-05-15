@@ -73,6 +73,14 @@ func SetJiraProjectKey(projectKey string) {
 	viper.Set("JIRA_PROJECT_KEY", projectKey)
 }
 
+func GetOverheadKey(key string) string {
+	return viper.GetString(key)
+}
+
+func SetOverheadKey(key string, mappedValue string) {
+	viper.Set(key, mappedValue)
+}
+
 func Persist() error {
 	// Creating file beforehand as viper.WriteConfig fails otherwise
 	err := createConfigFile("config.yaml")

@@ -5,6 +5,7 @@ import (
 	"github.com/javicg/toggl-sync/config"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -71,6 +72,30 @@ func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) (entries [
 	err = json.NewDecoder(resp.Body).Decode(&entries)
 	if err != nil {
 		log.Fatalln("[GetTimeEntries] Error unmarshalling response:", err)
+	}
+
+	return
+}
+
+type ProjectData struct {
+	Data struct {
+		Id   int
+		Name string
+	}
+}
+
+func (toggl *TogglApi) GetProjectById(pid int) (data ProjectData) {
+	resp, err := toggl.getAuthenticated("/projects/" + strconv.Itoa(pid))
+	if err != nil {
+		log.Fatalln("[GetProjectById] Request failed! Error:", err)
+	} else if resp.StatusCode != 200 {
+		log.Fatalf("[GetProjectById] Request failed with status: %d", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		log.Fatalln("[GetProjectById] Error unmarshalling response:", err)
 	}
 
 	return
