@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/javicg/toggl-tracker/api"
+	"github.com/javicg/toggl-sync/api"
 	"os"
 	"strings"
 	"time"
