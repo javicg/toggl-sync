@@ -19,7 +19,9 @@ func Execute() {
 }
 
 var rootCmd = &cobra.Command{
-	Use: "toggl-sync",
+	Use:   "toggl-sync",
+	Short: "Synchornize time entries to Jira",
+	Long:  "Synchronize time entries to Jira using predefined project keys",
 	Run: func(cmd *cobra.Command, args []string) {
 		readConfig()
 		validateConfig()

@@ -10,8 +10,10 @@ func init() {
 }
 
 var versionCmd = &cobra.Command{
-	Use: "version",
+	Use:   "version",
+	Short: "Print current project version",
+	Long:  "Print current project version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Toggl Sync v0.1")
+		fmt.Println("toggl-sync v0.1")
 	},
 }

@@ -15,7 +15,9 @@ func init() {
 }
 
 var configureCmd = &cobra.Command{
-	Use: "configure",
+	Use:   "configure",
+	Short: "Create (or update) toggl-sync configuration",
+	Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
 	Run: func(cmd *cobra.Command, args []string) {
 		configure()
 	},
