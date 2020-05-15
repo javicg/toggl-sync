@@ -39,6 +39,7 @@ func updateConfiguration() {
 	saveSettingAs("Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
 	saveSettingAs("Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
 	saveSettingAs("Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
+	saveSettingAs("Jira project key", config.GetJiraProjectKey, config.SetJiraProjectKey, false)
 }
 
 func saveSettingAs(inputName string, getFn func() string, saveFn func(string), isPassword bool) {

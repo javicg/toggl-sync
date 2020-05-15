@@ -46,7 +46,8 @@ func validateConfig() {
 			config.GetTogglPassword() != "" &&
 			config.GetJiraServerUrl() != "" &&
 			config.GetJiraUsername() != "" &&
-			config.GetJiraPassword() != ""
+			config.GetJiraPassword() != "" &&
+			config.GetJiraProjectKey() != ""
 
 	if !isValid {
 		log.Fatalln("Configuration file is invalid! Please, run 'configure' to create a new configuration file")
@@ -62,6 +63,7 @@ func sync() {
 	entries := getTimeEntriesForDate(togglApi, trackingDate)
 
 	printSummary(entries)
+	logWorkOnJira(entries)
 }
 
 func printUserDetails(togglApi *api.TogglApi) {
@@ -104,5 +106,22 @@ func printSummary(entries []api.TimeEntry) {
 	log.Print("== Time Entries Summary ==")
 	for i := range entries {
 		log.Printf("Entry: %s || Duration (s): %d", entries[i].Description, entries[i].Duration)
+	}
+}
+
+func logWorkOnJira(entries []api.TimeEntry) {
+	log.Print("Logging work on Jira...")
+	jiraApi := api.NewJiraApi()
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Description, config.GetJiraProjectKey()) {
+			err := jiraApi.LogWork(entry.Description, time.Duration(entry.Duration)*time.Second)
+			if err != nil {
+				log.Printf("No time logged for [%s]; operation failed with an error: %s", entry.Description, err)
+			} else {
+				log.Printf("Successfully logged [%d]s for entry [%s]", entry.Duration, entry.Description)
+			}
+		} else {
+			log.Printf("No time logged for [%s]; logging work outside [%s] not supported yet", entry.Description, config.GetJiraProjectKey())
+		}
 	}
 }

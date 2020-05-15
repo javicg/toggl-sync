@@ -15,7 +15,7 @@ type JiraApi struct {
 	client  *http.Client
 }
 
-func NewJiraApi() (api *JiraApi, err error) {
+func NewJiraApi() (api *JiraApi) {
 	api = &JiraApi{}
 	api.baseUrl = config.GetJiraServerUrl() + "/rest/api/latest"
 	api.client = &http.Client{}

@@ -65,6 +65,14 @@ func SetJiraPassword(password string) {
 	viper.Set("JIRA_PASSWORD", password)
 }
 
+func GetJiraProjectKey() string {
+	return viper.GetString("JIRA_PROJECT_KEY")
+}
+
+func SetJiraProjectKey(projectKey string) {
+	viper.Set("JIRA_PROJECT_KEY", projectKey)
+}
+
 func Persist() error {
 	// Creating file beforehand as viper.WriteConfig fails otherwise
 	err := createConfigFile("config.yaml")
