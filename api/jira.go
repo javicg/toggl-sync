@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spf13/viper"
 	"io"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -18,12 +18,7 @@ type JiraApi struct {
 
 func NewJiraApi() (api *JiraApi, err error) {
 	api = &JiraApi{}
-	baseUrl, ok := os.LookupEnv("JIRA_BASE_URL")
-	if !ok {
-		err = errors.New(fmt.Sprintf("%s not specified!", "JIRA_BASE_URL"))
-		return
-	}
-	api.baseUrl = baseUrl
+	api.baseUrl = viper.GetString("JIRA_SERVER_URL") + "/rest/api/latest"
 	api.client = &http.Client{}
 	return
 }
@@ -60,10 +55,7 @@ func (jira *JiraApi) postAuthenticated(path string, body io.Reader) (resp *http.
 		return
 	}
 
-	err = addBasicAuth(req, "JIRA_USERNAME", "JIRA_PASSWORD")
-	if err != nil {
-		return
-	}
+	req.SetBasicAuth(viper.GetString("JIRA_USERNAME"), viper.GetString("JIRA_PASSWORD"))
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")

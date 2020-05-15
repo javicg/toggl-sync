@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/javicg/toggl-sync/api"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 	"strings"
 	"time"
@@ -20,8 +21,49 @@ func Execute() {
 var rootCmd = &cobra.Command{
 	Use: "toggl-sync",
 	Run: func(cmd *cobra.Command, args []string) {
+		readConfig()
+		validateConfig()
 		sync()
 	},
+}
+
+func readConfig() {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Println("No configuration file exists! Please, run 'configure' to create a new configuration file")
+			os.Exit(0)
+		} else {
+			fmt.Println("Unable to read configuration: ", err)
+			os.Exit(1)
+		}
+	}
+
+	fmt.Println("Configuration read from: ", viper.ConfigFileUsed())
+}
+
+func validateConfig() {
+	isValid :=
+		valueExists("TOGGL_USERNAME") &&
+			valueExists("TOGGL_PASSWORD") &&
+			valueExists("JIRA_SERVER_URL") &&
+			valueExists("JIRA_USERNAME") &&
+			valueExists("JIRA_PASSWORD")
+
+	if !isValid {
+		fmt.Println("Configuration file is invalid! Please, run 'configure' to create a new configuration file")
+		os.Exit(1)
+	}
+}
+
+func valueExists(configName string) bool {
+	if value := viper.Get(configName); value == nil {
+		fmt.Printf(fmt.Sprintf("%s not specified!\n", configName))
+		return false
+	}
+	return true
 }
 
 func sync() {

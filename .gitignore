@@ -20,3 +20,4 @@
 
 # toggl-sync
 target/
+config.yaml

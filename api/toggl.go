@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/spf13/viper"
 	"net/http"
 	"time"
 )
@@ -87,10 +88,7 @@ func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[s
 		return
 	}
 
-	err = addBasicAuth(req, "TOGGL_USERNAME", "TOGGL_PASSWORD")
-	if err != nil {
-		return
-	}
+	req.SetBasicAuth(viper.GetString("TOGGL_USERNAME"), viper.GetString("TOGGL_PASSWORD"))
 
 	q := req.URL.Query()
 	for p := range params {
@@ -108,10 +106,7 @@ func (toggl *TogglApi) getAuthenticated(path string) (resp *http.Response, err e
 		return
 	}
 
-	err = addBasicAuth(req, "TOGGL_USERNAME", "TOGGL_PASSWORD")
-	if err != nil {
-		return
-	}
+	req.SetBasicAuth(viper.GetString("TOGGL_USERNAME"), viper.GetString("TOGGL_PASSWORD"))
 
 	req.Header.Add("Accept", "application/json")
 	return toggl.client.Do(req)
