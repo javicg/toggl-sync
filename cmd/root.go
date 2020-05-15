@@ -65,6 +65,9 @@ func sync() {
 
 	printSummary(entries)
 	logWorkOnJira(togglApi, jiraApi, entries)
+	if err := config.Persist(); err != nil {
+		log.Fatalln("Error saving configuration to file: ", err)
+	}
 }
 
 func printUserDetails(togglApi *api.TogglApi) {
