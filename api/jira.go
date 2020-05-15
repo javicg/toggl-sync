@@ -3,7 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/spf13/viper"
+	"github.com/javicg/toggl-sync/config"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +17,7 @@ type JiraApi struct {
 
 func NewJiraApi() (api *JiraApi, err error) {
 	api = &JiraApi{}
-	api.baseUrl = viper.GetString("JIRA_SERVER_URL") + "/rest/api/latest"
+	api.baseUrl = config.GetJiraServerUrl() + "/rest/api/latest"
 	api.client = &http.Client{}
 	return
 }
@@ -50,7 +50,7 @@ func (jira *JiraApi) postAuthenticated(path string, body io.Reader) (resp *http.
 		return
 	}
 
-	req.SetBasicAuth(viper.GetString("JIRA_USERNAME"), viper.GetString("JIRA_PASSWORD"))
+	req.SetBasicAuth(config.GetJiraUsername(), config.GetJiraPassword())
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")

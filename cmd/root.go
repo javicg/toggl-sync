@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/javicg/toggl-sync/api"
+	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"log"
 	"os"
 	"strings"
@@ -28,39 +28,29 @@ var rootCmd = &cobra.Command{
 }
 
 func readConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Fatalln("No configuration file exists! Please, run 'configure' to create a new configuration file")
-		} else {
-			log.Fatalf("Unable to read configuration: %s", err)
-		}
+	err, ok := config.Init()
+	if err != nil {
+		log.Fatalf("Unable to read configuration: %s", err)
 	}
 
-	log.Printf("Configuration read from: %s", viper.ConfigFileUsed())
+	if !ok {
+		log.Fatalln("No configuration file exists! Please, run 'configure' to create a new configuration file")
+	}
+
+	log.Printf("Configuration read from: %s", config.ConfigFileUsed())
 }
 
 func validateConfig() {
 	isValid :=
-		valueExists("TOGGL_USERNAME") &&
-			valueExists("TOGGL_PASSWORD") &&
-			valueExists("JIRA_SERVER_URL") &&
-			valueExists("JIRA_USERNAME") &&
-			valueExists("JIRA_PASSWORD")
+		config.GetTogglUsername() != "" &&
+			config.GetTogglPassword() != "" &&
+			config.GetJiraServerUrl() != "" &&
+			config.GetJiraUsername() != "" &&
+			config.GetJiraPassword() != ""
 
 	if !isValid {
 		log.Fatalln("Configuration file is invalid! Please, run 'configure' to create a new configuration file")
 	}
-}
-
-func valueExists(configName string) bool {
-	if value := viper.Get(configName); value == nil {
-		log.Printf("%s not specified!", configName)
-		return false
-	}
-	return true
 }
 
 func sync() {

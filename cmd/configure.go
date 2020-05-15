@@ -3,8 +3,8 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"log"
 	"os"
 	"strings"
@@ -17,60 +17,35 @@ func init() {
 var configureCmd = &cobra.Command{
 	Use: "configure",
 	Run: func(cmd *cobra.Command, args []string) {
-		viper.SetConfigName("config")
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath(".")
 		configure()
 	},
 }
 
 func configure() {
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Print("No configuration file exists. Creating a new one...")
-			createConfigFile("config.yaml")
-		} else {
-			log.Fatalln("Unable to read configuration: ", err)
-		}
+	err, _ := config.Init()
+	if err != nil {
+		log.Fatalln("Error reading configuration file: ", err)
 	}
 
 	updateConfiguration()
-	if err := viper.WriteConfig(); err != nil {
+	if err := config.Persist(); err != nil {
 		log.Fatalln("Error saving configuration to file: ", err)
 	}
 }
 
-func createConfigFile(fileName string) {
-	f, err := os.Create(fileName)
-	if err != nil {
-		log.Fatalln("Error creating configuration file: ", err)
-	}
-	if err = f.Close(); err != nil {
-		log.Fatalln("Error closing file: ", err)
-	}
-}
-
 func updateConfiguration() {
-	saveSettingAs("Toggl username", "TOGGL_USERNAME")
-	savePasswordAs("Toggl password", "TOGGL_PASSWORD")
-	saveSettingAs("Jira server url", "JIRA_SERVER_URL")
-	saveSettingAs("Jira username", "JIRA_USERNAME")
-	savePasswordAs("Jira password", "JIRA_PASSWORD")
+	saveSettingAs("Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
+	saveSettingAs("Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
+	saveSettingAs("Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
+	saveSettingAs("Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
+	saveSettingAs("Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
 }
 
-func savePasswordAs(inputName string, key string) {
-	value := viper.GetString(key)
-	input := requestUserInput(inputName, value, true)
+func saveSettingAs(inputName string, getFn func() string, saveFn func(string), isPassword bool) {
+	value := getFn()
+	input := requestUserInput(inputName, value, isPassword)
 	if input != "" {
-		viper.Set(key, input)
-	}
-}
-
-func saveSettingAs(inputName string, key string) {
-	value := viper.GetString(key)
-	input := requestUserInput(inputName, value, false)
-	if input != "" {
-		viper.Set(key, input)
+		saveFn(input)
 	}
 }
 
