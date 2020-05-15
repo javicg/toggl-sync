@@ -17,3 +17,6 @@
 # IntelliJ / GoLand
 .idea
 *.iml
+
+# toggl-sync
+target/
