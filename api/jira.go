@@ -3,10 +3,9 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"github.com/spf13/viper"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -32,18 +31,14 @@ func (jira *JiraApi) LogWork(ticket string, timeSpent time.Duration) (err error)
 	entry := &WorkLogEntry{Comment: "Added automatically by toggl-sync", TimeSpentSeconds: int(timeSpent.Seconds())}
 	entryJson, err := json.Marshal(entry)
 	if err != nil {
-		fmt.Println("[LogWork] Marshalling of work entry failed! Error:", err)
-		return
+		log.Fatalln("[LogWork] Marshalling of work entry failed! Error:", err)
 	}
-
-	fmt.Println(string(entryJson))
 
 	resp, err := jira.postAuthenticated("/issue/"+ticket+"/worklog", bytes.NewBuffer(entryJson))
 	if err != nil {
 		return
 	} else if resp.StatusCode != 201 {
-		err = errors.New(fmt.Sprintf("[LogWork] Request failed with status: %d", resp.StatusCode))
-		return
+		log.Fatalf("[LogWork] Request failed with status: %d", resp.StatusCode)
 	}
 
 	return resp.Body.Close()

@@ -6,6 +6,7 @@ import (
 	"github.com/javicg/toggl-sync/api"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -13,8 +14,7 @@ import (
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatalln(err)
 	}
 }
 
@@ -33,15 +33,13 @@ func readConfig() {
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Println("No configuration file exists! Please, run 'configure' to create a new configuration file")
-			os.Exit(0)
+			log.Fatalln("No configuration file exists! Please, run 'configure' to create a new configuration file")
 		} else {
-			fmt.Println("Unable to read configuration: ", err)
-			os.Exit(1)
+			log.Fatalf("Unable to read configuration: %s", err)
 		}
 	}
 
-	fmt.Println("Configuration read from: ", viper.ConfigFileUsed())
+	log.Printf("Configuration read from: %s", viper.ConfigFileUsed())
 }
 
 func validateConfig() {
@@ -53,14 +51,13 @@ func validateConfig() {
 			valueExists("JIRA_PASSWORD")
 
 	if !isValid {
-		fmt.Println("Configuration file is invalid! Please, run 'configure' to create a new configuration file")
-		os.Exit(1)
+		log.Fatalln("Configuration file is invalid! Please, run 'configure' to create a new configuration file")
 	}
 }
 
 func valueExists(configName string) bool {
 	if value := viper.Get(configName); value == nil {
-		fmt.Printf(fmt.Sprintf("%s not specified!\n", configName))
+		log.Printf("%s not specified!", configName)
 		return false
 	}
 	return true
@@ -69,36 +66,36 @@ func valueExists(configName string) bool {
 func sync() {
 	togglApi := api.NewTogglApi()
 
-	fmt.Println("Fetching user details...")
+	log.Print("Fetching user details...")
 	me, err := togglApi.GetMe()
 	if err != nil {
-		return
+		log.Fatalf("Error fetching user details: %s", err)
 	}
-	fmt.Printf("User details: Name = %s, Email = %s\n", me.Data.Fullname, me.Data.Email)
+
+	log.Printf("User details: Name = %s, Email = %s", me.Data.Fullname, me.Data.Email)
 
 	fmt.Print("Introduce a date to fetch time entries (e.g. 2020-05-08) -> ")
 	reader := bufio.NewReader(os.Stdin)
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
+		log.Fatalf("Error reading input: %s", err)
 	}
 	input = strings.Replace(input, "\n", "", -1)
 
 	startDate, err := time.Parse(time.RFC3339, input+"T00:00:00Z")
 	if err != nil {
-		fmt.Println("Error parsing input date:", err)
-		return
+		log.Fatalf("Error parsing input date: %s", err)
 	}
 
 	entries, err := togglApi.GetTimeEntries(startDate, startDate.AddDate(0, 0, 1))
 	if err != nil {
+		log.Fatalf("Error retrieving time entries: %s", err)
 		return
 	}
 
-	fmt.Println("== Time Entries Summary ==")
+	log.Print("== Time Entries Summary ==")
 	for i := range entries {
-		fmt.Printf("Entry: %s || Duration (s): %d\n", entries[i].Description, entries[i].Duration)
+		log.Printf("Entry: %s || Duration (s): %d", entries[i].Description, entries[i].Duration)
 	}
 }

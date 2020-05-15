@@ -2,9 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"github.com/spf13/viper"
+	"log"
 	"net/http"
 	"time"
 )
@@ -31,18 +30,15 @@ type Me struct {
 func (toggl *TogglApi) GetMe() (me Me, err error) {
 	resp, err := toggl.getAuthenticated("/me")
 	if err != nil {
-		fmt.Println("[GetMe] Request failed! Error:", err)
-		return
+		log.Fatalln("[GetMe] Request failed! Error:", err)
 	} else if resp.StatusCode != 200 {
-		err = errors.New(fmt.Sprintf("[GetMe] Request failed with status: %d", resp.StatusCode))
-		return
+		log.Fatalf("[GetMe] Request failed with status: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&me)
 	if err != nil {
-		fmt.Println("[GetMe] Error unmarshalling response:", err)
-		return
+		log.Fatalln("[GetMe] Error unmarshalling response:", err)
 	}
 
 	return
@@ -66,19 +62,17 @@ func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) (entries [
 
 	resp, err := toggl.getAuthenticatedWithQueryParams("/time_entries", params)
 	if err != nil {
-		fmt.Println("[GetTimeEntries] Request failed! Error:", err)
-		return
+		log.Fatalln("[GetTimeEntries] Request failed! Error:", err)
 	} else if resp.StatusCode != 200 {
-		err = errors.New(fmt.Sprintf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode))
-		return
+		log.Fatalf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&entries)
 	if err != nil {
-		fmt.Println("[GetTimeEntries] Error unmarshalling response:", err)
-		return
+		log.Fatalln("[GetTimeEntries] Error unmarshalling response:", err)
 	}
+
 	return
 }
 

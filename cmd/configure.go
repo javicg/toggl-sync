@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 	"strings"
 )
@@ -26,29 +27,26 @@ var configureCmd = &cobra.Command{
 func configure() {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			fmt.Println("No configuration file exists. Creating a new one...")
+			log.Print("No configuration file exists. Creating a new one...")
 			createConfigFile("config.yaml")
 		} else {
-			fmt.Println("Unable to read configuration: ", err)
-			os.Exit(1)
+			log.Fatalln("Unable to read configuration: ", err)
 		}
 	}
 
 	updateConfiguration()
 	if err := viper.WriteConfig(); err != nil {
-		fmt.Println("Error saving configuration to file: ", err)
-		os.Exit(1)
+		log.Fatalln("Error saving configuration to file: ", err)
 	}
 }
 
 func createConfigFile(fileName string) {
 	f, err := os.Create(fileName)
 	if err != nil {
-		fmt.Println("Error creating configuration file: ", err)
-		os.Exit(1)
+		log.Fatalln("Error creating configuration file: ", err)
 	}
 	if err = f.Close(); err != nil {
-		fmt.Println("Error closing file: ", err)
+		log.Fatalln("Error closing file: ", err)
 	}
 }
 
@@ -88,8 +86,7 @@ func requestUserInput(inputName string, previousValue string, isPassword bool) (
 	reader := bufio.NewReader(os.Stdin)
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Println("Error reading input:", err)
-		os.Exit(1)
+		log.Fatalln("Error reading input:", err)
 	}
 	input = strings.Replace(input, "\n", "", -1)
 	return
