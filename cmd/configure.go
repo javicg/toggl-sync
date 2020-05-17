@@ -8,6 +8,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func init() {
@@ -45,18 +48,24 @@ func updateConfiguration() {
 }
 
 func saveSettingAs(inputName string, getFn func() string, saveFn func(string), isPassword bool) {
-	value := getFn()
-	input := requestUserInput(inputName, value, isPassword)
+	existingValue := getFn()
+	input := requestInput(inputName, existingValue, isPassword)
 	if input != "" {
 		saveFn(input)
 	}
 }
 
-func requestUserInput(inputName string, previousValue string, isPassword bool) (input string) {
-	if previousValue != "" && !isPassword {
-		fmt.Printf("%s (%s): ", inputName, previousValue)
-	} else if previousValue != "" && isPassword {
-		fmt.Printf("%s (*****): ", inputName)
+func requestInput(inputName string, existingValue string, isPassword bool) string {
+	if isPassword {
+		return requestPassword(inputName, existingValue)
+	} else {
+		return requestTextInput(inputName, existingValue)
+	}
+}
+
+func requestTextInput(inputName string, existingValue string) string {
+	if existingValue != "" {
+		fmt.Printf("%s (%s): ", inputName, existingValue)
 	} else {
 		fmt.Printf("%s: ", inputName)
 	}
@@ -66,6 +75,23 @@ func requestUserInput(inputName string, previousValue string, isPassword bool) (
 	if err != nil {
 		log.Fatalln("Error reading input:", err)
 	}
-	input = strings.Replace(input, "\n", "", -1)
-	return
+	input = strings.TrimSpace(input)
+	return input
+}
+
+func requestPassword(inputName string, existingValue string) string {
+	if existingValue != "" {
+		fmt.Printf("%s (*****): ", inputName)
+	} else {
+		fmt.Printf("%s: ", inputName)
+	}
+
+	bytePwd, err := terminal.ReadPassword(syscall.Stdin)
+	fmt.Println()
+	if err != nil {
+		log.Fatalln("Error reading input:", err)
+	}
+	pwd := string(bytePwd)
+	pwd = strings.TrimSpace(pwd)
+	return pwd
 }
