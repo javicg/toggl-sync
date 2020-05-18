@@ -92,7 +92,7 @@ func Persist() error {
 }
 
 func createConfigFile() error {
-	f, err := os.Create("/usr/local/etc/toggl-sync.yaml")
+	f, err := os.OpenFile("/usr/local/etc/toggl-sync.yaml", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}
