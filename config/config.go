@@ -6,9 +6,9 @@ import (
 )
 
 func Init() (err error, ok bool) {
-	viper.SetConfigName("config")
+	viper.SetConfigName("toggl-sync")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath("/usr/local/etc")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -83,7 +83,7 @@ func SetOverheadKey(key string, mappedValue string) {
 
 func Persist() error {
 	// Creating file beforehand as viper.WriteConfig fails otherwise
-	err := createConfigFile("config.yaml")
+	err := createConfigFile()
 	if err != nil {
 		return err
 	}
@@ -91,8 +91,8 @@ func Persist() error {
 	return viper.WriteConfig()
 }
 
-func createConfigFile(fileName string) error {
-	f, err := os.Create(fileName)
+func createConfigFile() error {
+	f, err := os.Create("/usr/local/etc/toggl-sync.yaml")
 	if err != nil {
 		return err
 	}
