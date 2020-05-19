@@ -58,7 +58,6 @@ func validateConfig() {
 
 func sync() {
 	togglApi := api.NewTogglApi()
-	jiraApi := api.NewJiraApi()
 
 	printUserDetails(togglApi)
 
@@ -66,6 +65,15 @@ func sync() {
 	entries := getTimeEntriesForDate(togglApi, trackingDate)
 
 	printSummary(entries)
+
+	ok, message := validateEntries(entries)
+	if !ok {
+		log.Print("Found issues during validation:")
+		fmt.Print(message)
+		log.Fatal("Please, correct the time entries above and try again.")
+	}
+
+	jiraApi := api.NewJiraApi()
 	logWorkOnJira(togglApi, jiraApi, entries)
 	if err := config.Persist(); err != nil {
 		log.Fatalln("Error saving configuration to file: ", err)
@@ -79,7 +87,8 @@ func printUserDetails(togglApi *api.TogglApi) {
 		log.Fatalf("Error fetching user details: %s", err)
 	}
 
-	log.Printf("User details: Name = %s, Email = %s", me.Data.Fullname, me.Data.Email)
+	log.Print("User details:")
+	fmt.Printf("Name = %s, Email = %s\n", me.Data.Fullname, me.Data.Email)
 }
 
 func requestTrackingDate() string {
@@ -108,17 +117,42 @@ func getTimeEntriesForDate(togglApi *api.TogglApi, dateStr string) []api.TimeEnt
 	return entries
 }
 
+func validateEntries(entries []api.TimeEntry) (ok bool, message string) {
+	log.Print("Validating time entries...")
+	ok, message = true, ""
+	for _, entry := range entries {
+		entryOk, entryMessage := validateEntry(entry)
+		ok = ok && entryOk
+		message = message + entryMessage
+	}
+	return
+}
+
+func validateEntry(entry api.TimeEntry) (ok bool, message string) {
+	if entry.Description == "" {
+		return false, "Found entry without a description. All entries must contain a description.\n"
+	} else if !isJiraTicket(entry) && entry.Pid == 0 {
+		return false, fmt.Sprintf("Entry [%s] does not seem to be a Jira ticket and doesn't have a Toggl project assigned.\n", entry.Description)
+	} else {
+		return true, ""
+	}
+}
+
+func isJiraTicket(entry api.TimeEntry) bool {
+	return strings.HasPrefix(entry.Description, config.GetJiraProjectKey())
+}
+
 func printSummary(entries []api.TimeEntry) {
 	log.Print("== Time Entries Summary ==")
 	for i := range entries {
-		log.Printf("Entry: %s || Duration (s): %d", entries[i].Description, entries[i].Duration)
+		fmt.Printf("Entry: %s || Duration (s): %d\n", entries[i].Description, entries[i].Duration)
 	}
 }
 
 func logWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entries []api.TimeEntry) {
 	log.Print("Logging work on Jira...")
 	for _, entry := range entries {
-		if strings.HasPrefix(entry.Description, config.GetJiraProjectKey()) {
+		if isJiraTicket(entry) {
 			logProjectWorkOnJira(jiraApi, entry)
 		} else {
 			logOverheadWorkOnJira(togglApi, jiraApi, entry)
