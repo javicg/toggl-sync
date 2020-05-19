@@ -1,9 +1,18 @@
 package config
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"os"
 )
+
+const togglUsernameKey = "toggl.username"
+const togglPasswordKey = "toggl.password"
+const jiraServerUrlKey = "jira.server.url"
+const jiraUsernameKey = "jira.username"
+const jiraPasswordKey = "jira.password"
+const jiraProjectKeyKey = "jira.project.key"
+const jiraOverheadKeyPrefix = "jira.overhead"
 
 func Init() (err error, ok bool) {
 	viper.SetConfigName("toggl-sync")
@@ -26,59 +35,63 @@ func ConfigFileUsed() string {
 }
 
 func GetTogglUsername() string {
-	return viper.GetString("TOGGL_USERNAME")
+	return viper.GetString(togglUsernameKey)
 }
 
 func SetTogglUsername(username string) {
-	viper.Set("TOGGL_USERNAME", username)
+	viper.Set(togglUsernameKey, username)
 }
 
 func GetTogglPassword() string {
-	return viper.GetString("TOGGL_PASSWORD")
+	return viper.GetString(togglPasswordKey)
 }
 
 func SetTogglPassword(password string) {
-	viper.Set("TOGGL_PASSWORD", password)
+	viper.Set(togglPasswordKey, password)
 }
 
 func GetJiraServerUrl() string {
-	return viper.GetString("JIRA_SERVER_URL")
+	return viper.GetString(jiraServerUrlKey)
 }
 
 func SetJiraServerUrl(serverUrl string) {
-	viper.Set("JIRA_SERVER_URL", serverUrl)
+	viper.Set(jiraServerUrlKey, serverUrl)
 }
 
 func GetJiraUsername() string {
-	return viper.GetString("JIRA_USERNAME")
+	return viper.GetString(jiraUsernameKey)
 }
 
 func SetJiraUsername(username string) {
-	viper.Set("JIRA_USERNAME", username)
+	viper.Set(jiraUsernameKey, username)
 }
 
 func GetJiraPassword() string {
-	return viper.GetString("JIRA_PASSWORD")
+	return viper.GetString(jiraPasswordKey)
 }
 
 func SetJiraPassword(password string) {
-	viper.Set("JIRA_PASSWORD", password)
+	viper.Set(jiraPasswordKey, password)
 }
 
 func GetJiraProjectKey() string {
-	return viper.GetString("JIRA_PROJECT_KEY")
+	return viper.GetString(jiraProjectKeyKey)
 }
 
 func SetJiraProjectKey(projectKey string) {
-	viper.Set("JIRA_PROJECT_KEY", projectKey)
+	viper.Set(jiraProjectKeyKey, projectKey)
 }
 
 func GetOverheadKey(key string) string {
-	return viper.GetString(key)
+	return viper.GetString(generateOverheadKeyFrom(key))
 }
 
 func SetOverheadKey(key string, mappedValue string) {
-	viper.Set(key, mappedValue)
+	viper.Set(generateOverheadKeyFrom(key), mappedValue)
+}
+
+func generateOverheadKeyFrom(key string) string {
+	return fmt.Sprintf("%s.%s", jiraOverheadKeyPrefix, key)
 }
 
 func Persist() error {
