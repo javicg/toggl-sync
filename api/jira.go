@@ -3,12 +3,15 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"io"
 	"log"
 	"net/http"
 	"time"
 )
+
+const workLogEntryCommentFooter = "Added automatically by toggl-sync"
 
 type JiraApi struct {
 	baseUrl string
@@ -27,8 +30,31 @@ type WorkLogEntry struct {
 	TimeSpentSeconds int    `json:"timeSpentSeconds"`
 }
 
+func (jira *JiraApi) LogWorkWithUserDescription(ticket string, userDescription string, timeSpent time.Duration) (err error) {
+	entry := createWorkLogEntryWithUserDescription(userDescription, timeSpent)
+	return jira.logEntry(ticket, entry)
+}
+
+func createWorkLogEntryWithUserDescription(userDescription string, timeSpent time.Duration) *WorkLogEntry {
+	return &WorkLogEntry{
+		Comment:          fmt.Sprintf("%s\n%s", userDescription, workLogEntryCommentFooter),
+		TimeSpentSeconds: int(timeSpent.Seconds()),
+	}
+}
+
 func (jira *JiraApi) LogWork(ticket string, timeSpent time.Duration) (err error) {
-	entry := &WorkLogEntry{Comment: "Added automatically by toggl-sync", TimeSpentSeconds: int(timeSpent.Seconds())}
+	entry := createWorkLogEntry(timeSpent)
+	return jira.logEntry(ticket, entry)
+}
+
+func createWorkLogEntry(timeSpent time.Duration) *WorkLogEntry {
+	return &WorkLogEntry{
+		Comment:          workLogEntryCommentFooter,
+		TimeSpentSeconds: int(timeSpent.Seconds()),
+	}
+}
+
+func (jira *JiraApi) logEntry(ticket string, entry *WorkLogEntry) (err error) {
 	entryJson, err := json.Marshal(entry)
 	if err != nil {
 		log.Fatalln("[LogWork] Marshalling of work entry failed! Error:", err)

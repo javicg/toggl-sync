@@ -176,7 +176,7 @@ func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry a
 	}
 
 	key := config.GetOverheadKey(project.Data.Name)
-	err := jiraApi.LogWork(key, time.Duration(entry.Duration)*time.Second)
+	err := jiraApi.LogWorkWithUserDescription(key, entry.Description, time.Duration(entry.Duration)*time.Second)
 	if err != nil {
 		log.Printf("No time logged for [%s] (project [%s]); operation failed with an error: %s", entry.Description, project.Data.Name, err)
 	} else {
