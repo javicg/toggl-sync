@@ -15,13 +15,15 @@ import (
 var dryRun bool
 
 var rootCmd = &cobra.Command{
-	Use:   "toggl-sync",
+	Use:   "toggl-sync date",
 	Short: "Synchronize time entries to Jira",
 	Long:  "Synchronize time entries to Jira using predefined project keys",
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		syncDate := args[0]
 		readConfig()
 		validateConfig()
-		sync(dryRun)
+		sync(syncDate, dryRun)
 	},
 }
 
@@ -62,14 +64,12 @@ func validateConfig() {
 	}
 }
 
-func sync(dryRun bool) {
+func sync(syncDate string, dryRun bool) {
 	togglApi := api.NewTogglApi()
 
 	printUserDetails(togglApi)
 
-	trackingDate := requestTrackingDate()
-	entries := getTimeEntriesForDate(togglApi, trackingDate)
-
+	entries := getTimeEntriesForDate(togglApi, syncDate)
 	printSummary(entries)
 
 	ok, message := validateEntries(entries)
@@ -101,20 +101,12 @@ func printUserDetails(togglApi *api.TogglApi) {
 	fmt.Printf("Name = %s, Email = %s\n", me.Data.Fullname, me.Data.Email)
 }
 
-func requestTrackingDate() string {
-	fmt.Print("Introduce a date to fetch time entries (e.g. 2020-05-08) -> ")
-	reader := bufio.NewReader(os.Stdin)
-
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatalf("Error reading input: %s", err)
-	}
-	input = strings.Replace(input, "\n", "", -1)
-	return input
-}
+const (
+	layoutDateISO = "2006-01-02"
+)
 
 func getTimeEntriesForDate(togglApi *api.TogglApi, dateStr string) []api.TimeEntry {
-	startDate, err := time.Parse(time.RFC3339, dateStr+"T00:00:00Z")
+	startDate, err := time.Parse(layoutDateISO, dateStr)
 	if err != nil {
 		log.Fatalf("Error parsing input date: %s", err)
 	}
