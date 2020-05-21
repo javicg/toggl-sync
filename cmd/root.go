@@ -12,21 +12,27 @@ import (
 	"time"
 )
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatalln(err)
-	}
-}
+var dryRun bool
 
 var rootCmd = &cobra.Command{
 	Use:   "toggl-sync",
-	Short: "Synchornize time entries to Jira",
+	Short: "Synchronize time entries to Jira",
 	Long:  "Synchronize time entries to Jira using predefined project keys",
 	Run: func(cmd *cobra.Command, args []string) {
 		readConfig()
 		validateConfig()
-		sync()
+		sync(dryRun)
 	},
+}
+
+func init() {
+	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Dry-run toggl-sync (avoid side effects)")
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatalln(err)
+	}
 }
 
 func readConfig() {
@@ -39,7 +45,7 @@ func readConfig() {
 		log.Fatalln("No configuration file exists! Please, run 'configure' to create a new configuration file")
 	}
 
-	log.Printf("Configuration read from: %s", config.ConfigFileUsed())
+	log.Printf("Configuration read from: %s", config.FileUsed())
 }
 
 func validateConfig() {
@@ -56,7 +62,7 @@ func validateConfig() {
 	}
 }
 
-func sync() {
+func sync(dryRun bool) {
 	togglApi := api.NewTogglApi()
 
 	printUserDetails(togglApi)
@@ -73,10 +79,14 @@ func sync() {
 		log.Fatal("Please, correct the time entries above and try again.")
 	}
 
-	jiraApi := api.NewJiraApi()
-	logWorkOnJira(togglApi, jiraApi, entries)
-	if err := config.Persist(); err != nil {
-		log.Fatalln("Error saving configuration to file: ", err)
+	if dryRun {
+		log.Print("Logging work on Jira... SKIPPED! (dry-run)")
+	} else {
+		jiraApi := api.NewJiraApi()
+		logWorkOnJira(togglApi, jiraApi, entries)
+		if err := config.Persist(); err != nil {
+			log.Fatalln("Error saving configuration to file: ", err)
+		}
 	}
 }
 

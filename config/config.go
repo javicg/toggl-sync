@@ -30,7 +30,7 @@ func Init() (err error, ok bool) {
 	return nil, true
 }
 
-func ConfigFileUsed() string {
+func FileUsed() string {
 	return viper.ConfigFileUsed()
 }
 
