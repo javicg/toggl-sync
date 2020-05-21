@@ -26,7 +26,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Dry-run toggl-sync (avoid side effects)")
+	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry-run toggl-sync (avoid side effects)")
 }
 
 func Execute() {
