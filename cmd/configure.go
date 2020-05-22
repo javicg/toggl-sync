@@ -2,16 +2,36 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh/terminal"
 	"log"
 	"os"
 	"strings"
 	"syscall"
-
-	"golang.org/x/crypto/ssh/terminal"
 )
+
+type InputController interface {
+	RequestTextInput(string) (string, error)
+	RequestPassword(string) (string, error)
+}
+
+type StdInReader struct{}
+
+func (StdInReader) RequestTextInput(description string) (string, error) {
+	fmt.Print(description)
+	r := bufio.NewReader(os.Stdin)
+	return r.ReadString('\n')
+}
+
+func (StdInReader) RequestPassword(description string) (string, error) {
+	fmt.Print(description)
+	bytes, err := terminal.ReadPassword(syscall.Stdin)
+	fmt.Println()
+	return string(bytes), err
+}
 
 func init() {
 	rootCmd.AddCommand(configureCmd)
@@ -22,77 +42,105 @@ var configureCmd = &cobra.Command{
 	Short: "Create (or update) toggl-sync configuration",
 	Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
 	Run: func(cmd *cobra.Command, args []string) {
-		configure()
+		err := configure(StdInReader{})
+		if err != nil {
+			log.Fatalf("Error configuring toggl-sync: %s", err)
+		}
 	},
 }
 
-func configure() {
+func configure(reader InputController) error {
 	err, _ := config.Init()
 	if err != nil {
-		log.Fatalln("Error reading configuration file: ", err)
+		return errors.New(fmt.Sprintf("Error reading configuration file: %s", err))
 	}
 
-	updateConfiguration()
+	err = updateConfiguration(reader)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error updating configuration: %s", err))
+	}
+
 	if err := config.Persist(); err != nil {
-		log.Fatalln("Error saving configuration to file: ", err)
+		return errors.New(fmt.Sprintf("Error saving configuration to file: %s", err))
 	}
+
+	return nil
 }
 
-func updateConfiguration() {
-	saveSettingAs("Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
-	saveSettingAs("Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
+func updateConfiguration(reader InputController) (err error) {
 	config.SetTogglServerUrl("https://www.toggl.com/api/v8")
-	saveSettingAs("Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
-	saveSettingAs("Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
-	saveSettingAs("Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
-	saveSettingAs("Jira project key", config.GetJiraProjectKey, config.SetJiraProjectKey, false)
+	err = saveSettingAs(reader, "Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
+	if err != nil {
+		return
+	}
+	err = saveSettingAs(reader, "Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
+	if err != nil {
+		return
+	}
+	err = saveSettingAs(reader, "Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
+	if err != nil {
+		return
+	}
+	err = saveSettingAs(reader, "Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
+	if err != nil {
+		return
+	}
+	err = saveSettingAs(reader, "Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
+	if err != nil {
+		return
+	}
+	err = saveSettingAs(reader, "Jira project key", config.GetJiraProjectKey, config.SetJiraProjectKey, false)
+	if err != nil {
+		return
+	}
+	return
 }
 
-func saveSettingAs(inputName string, getFn func() string, saveFn func(string), isPassword bool) {
+func saveSettingAs(reader InputController, inputName string, getFn func() string, saveFn func(string), isPassword bool) error {
 	existingValue := getFn()
-	input := requestInput(inputName, existingValue, isPassword)
-	if input != "" {
+	input, err := requestInput(reader, inputName, existingValue, isPassword)
+	if err == nil && input != "" {
 		saveFn(input)
 	}
+	return err
 }
 
-func requestInput(inputName string, existingValue string, isPassword bool) string {
+func requestInput(reader InputController, inputName string, existingValue string, isPassword bool) (string, error) {
 	if isPassword {
-		return requestPassword(inputName, existingValue)
+		return requestPassword(reader, inputName, existingValue)
 	} else {
-		return requestTextInput(inputName, existingValue)
+		return requestTextInput(reader, inputName, existingValue)
 	}
 }
 
-func requestTextInput(inputName string, existingValue string) string {
+func requestTextInput(reader InputController, inputName string, existingValue string) (string, error) {
+	var description string
 	if existingValue != "" {
-		fmt.Printf("%s (%s): ", inputName, existingValue)
+		description = fmt.Sprintf("%s (%s): ", inputName, existingValue)
 	} else {
-		fmt.Printf("%s: ", inputName)
+		description = fmt.Sprintf("%s: ", inputName)
 	}
 
-	reader := bufio.NewReader(os.Stdin)
-	input, err := reader.ReadString('\n')
+	input, err := reader.RequestTextInput(description)
 	if err != nil {
-		log.Fatalln("Error reading input:", err)
+		return "", errors.New(fmt.Sprintf("Error reading input: %s", err))
 	}
 	input = strings.TrimSpace(input)
-	return input
+	return input, nil
 }
 
-func requestPassword(inputName string, existingValue string) string {
+func requestPassword(reader InputController, inputName string, existingValue string) (string, error) {
+	var description string
 	if existingValue != "" {
-		fmt.Printf("%s (*****): ", inputName)
+		description = fmt.Sprintf("%s (*****): ", inputName)
 	} else {
-		fmt.Printf("%s: ", inputName)
+		description = fmt.Sprintf("%s: ", inputName)
 	}
 
-	bytePwd, err := terminal.ReadPassword(syscall.Stdin)
-	fmt.Println()
+	pwd, err := reader.RequestPassword(description)
 	if err != nil {
-		log.Fatalln("Error reading input:", err)
+		return "", errors.New(fmt.Sprintf("Error reading input: %s", err))
 	}
-	pwd := string(bytePwd)
 	pwd = strings.TrimSpace(pwd)
-	return pwd
+	return pwd, nil
 }
