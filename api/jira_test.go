@@ -13,7 +13,7 @@ func TestJiraApi_LogWork(t *testing.T) {
 	ticket := "EXAMPLE-1234"
 	expectedEntry := WorkLogEntry{
 		Comment:          "Added automatically by toggl-sync",
-		TimeSpentSeconds: 61,
+		TimeSpentSeconds: 60,
 	}
 
 	server := NewHttpServer().
