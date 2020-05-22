@@ -14,6 +14,10 @@ var versionCmd = &cobra.Command{
 	Short: "Print current project version",
 	Long:  "Print current project version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("toggl-sync v0.1")
+		fmt.Println(getVersion())
 	},
+}
+
+func getVersion() string {
+	return "toggl-sync v0.0.1"
 }
