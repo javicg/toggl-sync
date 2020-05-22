@@ -113,6 +113,10 @@ func Persist() error {
 	return viper.WriteConfig()
 }
 
+func Reset() {
+	viper.Reset()
+}
+
 func createConfigFile() error {
 	f, err := os.OpenFile("/usr/local/etc/toggl-sync.yaml", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {

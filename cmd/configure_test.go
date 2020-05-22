@@ -6,29 +6,8 @@ import (
 	"testing"
 )
 
-type MockInputReader struct {
-	TextInput      string
-	TextInputError error
-	Password       string
-	PasswordError  error
-}
-
-func (mr MockInputReader) RequestTextInput(string) (string, error) {
-	if mr.TextInputError != nil {
-		return "", mr.TextInputError
-	}
-	return mr.TextInput, nil
-}
-
-func (mr MockInputReader) RequestPassword(string) (string, error) {
-	if mr.PasswordError != nil {
-		return "", mr.PasswordError
-	}
-	return mr.Password, nil
-}
-
 func TestUpdateConfiguration(t *testing.T) {
-	err := updateConfiguration(&MockInputReader{
+	err := updateConfiguration(&MockInputController{
 		TextInput: "value",
 		Password:  "secret",
 	})
@@ -47,7 +26,7 @@ func TestUpdateConfiguration(t *testing.T) {
 }
 
 func TestUpdateConfiguration_TrimInputValues(t *testing.T) {
-	err := updateConfiguration(&MockInputReader{
+	err := updateConfiguration(&MockInputController{
 		TextInput: "\n\t value \t\n",
 		Password:  "\n\t secret \t\n",
 	})
@@ -66,7 +45,7 @@ func TestUpdateConfiguration_TrimInputValues(t *testing.T) {
 }
 
 func TestUpdateConfiguration_OverrideExistingValues(t *testing.T) {
-	err := updateConfiguration(&MockInputReader{
+	err := updateConfiguration(&MockInputController{
 		TextInput: "value",
 		Password:  "secret",
 	})
@@ -74,7 +53,7 @@ func TestUpdateConfiguration_OverrideExistingValues(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	err = updateConfiguration(&MockInputReader{
+	err = updateConfiguration(&MockInputController{
 		TextInput: "updatedValue",
 		Password:  "updatedSecret",
 	})
@@ -92,7 +71,7 @@ func TestUpdateConfiguration_OverrideExistingValues(t *testing.T) {
 }
 
 func TestUpdateConfiguration_PreserveExistingValuesOnEmptyInput(t *testing.T) {
-	err := updateConfiguration(&MockInputReader{
+	err := updateConfiguration(&MockInputController{
 		TextInput: "value",
 		Password:  "secret",
 	})
@@ -100,7 +79,7 @@ func TestUpdateConfiguration_PreserveExistingValuesOnEmptyInput(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	err = updateConfiguration(&MockInputReader{
+	err = updateConfiguration(&MockInputController{
 		TextInput: "updatedValue",
 		Password:  "",
 	})
@@ -118,7 +97,7 @@ func TestUpdateConfiguration_PreserveExistingValuesOnEmptyInput(t *testing.T) {
 }
 
 func TestUpdateConfiguration_PropagateErrorWhenReadTextInputFails(t *testing.T) {
-	err := updateConfiguration(&MockInputReader{
+	err := updateConfiguration(&MockInputController{
 		TextInputError: errors.New("stub error"),
 		Password:       "secret",
 	})
@@ -128,7 +107,7 @@ func TestUpdateConfiguration_PropagateErrorWhenReadTextInputFails(t *testing.T) 
 }
 
 func TestUpdateConfiguration_PropagateErrorWhenReadPasswordFails(t *testing.T) {
-	err := updateConfiguration(&MockInputReader{
+	err := updateConfiguration(&MockInputController{
 		TextInput:     "value",
 		PasswordError: errors.New("stub error"),
 	})

@@ -1,37 +1,13 @@
 package cmd
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh/terminal"
 	"log"
-	"os"
 	"strings"
-	"syscall"
 )
-
-type InputController interface {
-	RequestTextInput(string) (string, error)
-	RequestPassword(string) (string, error)
-}
-
-type StdInReader struct{}
-
-func (StdInReader) RequestTextInput(description string) (string, error) {
-	fmt.Print(description)
-	r := bufio.NewReader(os.Stdin)
-	return r.ReadString('\n')
-}
-
-func (StdInReader) RequestPassword(description string) (string, error) {
-	fmt.Print(description)
-	bytes, err := terminal.ReadPassword(syscall.Stdin)
-	fmt.Println()
-	return string(bytes), err
-}
 
 func init() {
 	rootCmd.AddCommand(configureCmd)
@@ -42,20 +18,20 @@ var configureCmd = &cobra.Command{
 	Short: "Create (or update) toggl-sync configuration",
 	Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := configure(StdInReader{})
+		err := configure(StdInController{})
 		if err != nil {
 			log.Fatalf("Error configuring toggl-sync: %s", err)
 		}
 	},
 }
 
-func configure(reader InputController) error {
+func configure(inputCtrl InputController) error {
 	err, _ := config.Init()
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error reading configuration file: %s", err))
 	}
 
-	err = updateConfiguration(reader)
+	err = updateConfiguration(inputCtrl)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error updating configuration: %s", err))
 	}
@@ -67,53 +43,53 @@ func configure(reader InputController) error {
 	return nil
 }
 
-func updateConfiguration(reader InputController) (err error) {
+func updateConfiguration(inputCtrl InputController) (err error) {
 	config.SetTogglServerUrl("https://www.toggl.com/api/v8")
-	err = saveSettingAs(reader, "Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
+	err = saveSettingAs(inputCtrl, "Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(reader, "Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
+	err = saveSettingAs(inputCtrl, "Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(reader, "Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
+	err = saveSettingAs(inputCtrl, "Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(reader, "Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
+	err = saveSettingAs(inputCtrl, "Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(reader, "Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
+	err = saveSettingAs(inputCtrl, "Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(reader, "Jira project key", config.GetJiraProjectKey, config.SetJiraProjectKey, false)
+	err = saveSettingAs(inputCtrl, "Jira project key", config.GetJiraProjectKey, config.SetJiraProjectKey, false)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func saveSettingAs(reader InputController, inputName string, getFn func() string, saveFn func(string), isPassword bool) error {
+func saveSettingAs(inputCtrl InputController, inputName string, getFn func() string, saveFn func(string), isPassword bool) error {
 	existingValue := getFn()
-	input, err := requestInput(reader, inputName, existingValue, isPassword)
+	input, err := requestInput(inputCtrl, inputName, existingValue, isPassword)
 	if err == nil && input != "" {
 		saveFn(input)
 	}
 	return err
 }
 
-func requestInput(reader InputController, inputName string, existingValue string, isPassword bool) (string, error) {
+func requestInput(inputCtrl InputController, inputName string, existingValue string, isPassword bool) (string, error) {
 	if isPassword {
-		return requestPassword(reader, inputName, existingValue)
+		return requestPassword(inputCtrl, inputName, existingValue)
 	} else {
-		return requestTextInput(reader, inputName, existingValue)
+		return requestTextInput(inputCtrl, inputName, existingValue)
 	}
 }
 
-func requestTextInput(reader InputController, inputName string, existingValue string) (string, error) {
+func requestTextInput(inputCtrl InputController, inputName string, existingValue string) (string, error) {
 	var description string
 	if existingValue != "" {
 		description = fmt.Sprintf("%s (%s): ", inputName, existingValue)
@@ -121,7 +97,7 @@ func requestTextInput(reader InputController, inputName string, existingValue st
 		description = fmt.Sprintf("%s: ", inputName)
 	}
 
-	input, err := reader.RequestTextInput(description)
+	input, err := inputCtrl.RequestTextInput(description)
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("Error reading input: %s", err))
 	}
@@ -129,7 +105,7 @@ func requestTextInput(reader InputController, inputName string, existingValue st
 	return input, nil
 }
 
-func requestPassword(reader InputController, inputName string, existingValue string) (string, error) {
+func requestPassword(inputCtrl InputController, inputName string, existingValue string) (string, error) {
 	var description string
 	if existingValue != "" {
 		description = fmt.Sprintf("%s (*****): ", inputName)
@@ -137,7 +113,7 @@ func requestPassword(reader InputController, inputName string, existingValue str
 		description = fmt.Sprintf("%s: ", inputName)
 	}
 
-	pwd, err := reader.RequestPassword(description)
+	pwd, err := inputCtrl.RequestPassword(description)
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("Error reading input: %s", err))
 	}
