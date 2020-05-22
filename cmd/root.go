@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/api"
 	"github.com/javicg/toggl-sync/config"
@@ -23,7 +24,17 @@ var rootCmd = &cobra.Command{
 		syncDate := args[0]
 		readConfig()
 		validateConfig()
-		sync(syncDate, dryRun)
+
+		err := sync(api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
+		if err != nil {
+			log.Fatalf("%s", err)
+		}
+
+		if !dryRun {
+			if err := config.Persist(); err != nil {
+				log.Fatalln("Error saving configuration to file: ", err)
+			}
+		}
 	},
 }
 
@@ -64,33 +75,34 @@ func validateConfig() {
 	}
 }
 
-func sync(syncDate string, dryRun bool) {
-	togglApi := api.NewTogglApi()
-
+func sync(togglApi api.TogglApi, jiraApi api.JiraApi, syncDate string, dryRun bool) error {
 	printUserDetails(togglApi)
 
-	entries := getTimeEntriesForDate(togglApi, syncDate)
+	entries, err := getTimeEntriesForDate(togglApi, syncDate)
+	if err != nil {
+		return err
+	}
+
 	printSummary(entries)
 
 	ok, message := validateEntries(entries)
 	if !ok {
 		log.Print("Found issues during validation:")
 		fmt.Print(message)
-		log.Fatal("Please, correct the time entries above and try again.")
+		log.Print("Please, correct the time entries above and try again.")
+		return errors.New("validation failed")
 	}
 
 	if dryRun {
 		log.Print("Logging work on Jira... SKIPPED! (dry-run)")
-	} else {
-		jiraApi := api.NewJiraApi()
-		logWorkOnJira(togglApi, jiraApi, entries)
-		if err := config.Persist(); err != nil {
-			log.Fatalln("Error saving configuration to file: ", err)
-		}
+		return nil
 	}
+
+	logWorkOnJira(togglApi, jiraApi, entries)
+	return nil
 }
 
-func printUserDetails(togglApi *api.TogglApi) {
+func printUserDetails(togglApi api.TogglApi) {
 	log.Print("Fetching user details...")
 	me, err := togglApi.GetMe()
 	if err != nil {
@@ -105,18 +117,18 @@ const (
 	layoutDateISO = "2006-01-02"
 )
 
-func getTimeEntriesForDate(togglApi *api.TogglApi, dateStr string) []api.TimeEntry {
+func getTimeEntriesForDate(togglApi api.TogglApi, dateStr string) ([]api.TimeEntry, error) {
 	startDate, err := time.Parse(layoutDateISO, dateStr)
 	if err != nil {
-		log.Fatalf("Error parsing input date: %s", err)
+		return nil, errors.New(fmt.Sprintf("Error parsing input date: %s", err))
 	}
 
 	entries, err := togglApi.GetTimeEntries(startDate, startDate.AddDate(0, 0, 1))
 	if err != nil {
-		log.Fatalf("Error retrieving time entries: %s", err)
+		return nil, errors.New(fmt.Sprintf("Error retrieving time entries: %s", err))
 	}
 
-	return entries
+	return entries, nil
 }
 
 func validateEntries(entries []api.TimeEntry) (ok bool, message string) {
@@ -151,7 +163,7 @@ func printSummary(entries []api.TimeEntry) {
 	}
 }
 
-func logWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entries []api.TimeEntry) {
+func logWorkOnJira(togglApi api.TogglApi, jiraApi api.JiraApi, entries []api.TimeEntry) {
 	log.Print("Logging work on Jira...")
 	for _, entry := range entries {
 		if isJiraTicket(entry) {
@@ -162,7 +174,7 @@ func logWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entries []api.T
 	}
 }
 
-func logProjectWorkOnJira(jiraApi *api.JiraApi, entry api.TimeEntry) {
+func logProjectWorkOnJira(jiraApi api.JiraApi, entry api.TimeEntry) {
 	err := jiraApi.LogWork(entry.Description, time.Duration(entry.Duration)*time.Second)
 	if err != nil {
 		log.Printf("No time logged for [%s]; operation failed with an error: %s", entry.Description, err)
@@ -171,7 +183,7 @@ func logProjectWorkOnJira(jiraApi *api.JiraApi, entry api.TimeEntry) {
 	}
 }
 
-func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry api.TimeEntry) {
+func logOverheadWorkOnJira(togglApi api.TogglApi, jiraApi api.JiraApi, entry api.TimeEntry) {
 	project, err := togglApi.GetProjectById(entry.Pid)
 	if err != nil {
 		log.Printf("No time logged for [%s]; retrieving project information failed with an error: %s", entry.Description, err)
@@ -179,7 +191,11 @@ func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry a
 	}
 
 	if config.GetOverheadKey(project.Data.Name) == "" {
-		requestOverheadKey(entry, project)
+		err = requestOverheadKey(entry, project)
+		if err != nil {
+			log.Printf("No time logged for [%s]; requesting project overhead key failed with an error: %s", entry.Description, err)
+			return
+		}
 	}
 
 	key := config.GetOverheadKey(project.Data.Name)
@@ -191,16 +207,17 @@ func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry a
 	}
 }
 
-func requestOverheadKey(entry api.TimeEntry, project *api.Project) {
+func requestOverheadKey(entry api.TimeEntry, project *api.Project) error {
 	fmt.Printf("No configuration found for entry [%s] (project [%s]). Which Jira ticket should be used for this type of work? -> ", entry.Description, project.Data.Name)
 	reader := bufio.NewReader(os.Stdin)
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatalf("Error reading input: %s", err)
+		return errors.New(fmt.Sprintf("Error reading input: %s", err))
 	}
-	input = strings.Replace(input, "\n", "", -1)
+	input = strings.TrimSpace(input)
 
 	log.Printf("Saving configuration: entries for project [%s] will be tracked as [%s] from now on", project.Data.Name, input)
 	config.SetOverheadKey(project.Data.Name, input)
+	return nil
 }

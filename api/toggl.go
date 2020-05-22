@@ -10,13 +10,19 @@ import (
 	"time"
 )
 
-type TogglApi struct {
+type TogglApi interface {
+	GetMe() (*Me, error)
+	GetTimeEntries(startDate time.Time, endDate time.Time) ([]TimeEntry, error)
+	GetProjectById(id int) (*Project, error)
+}
+
+type TogglApiHttpClient struct {
 	baseUrl string
 	client  *http.Client
 }
 
-func NewTogglApi() (api *TogglApi) {
-	api = &TogglApi{}
+func NewTogglApi() TogglApi {
+	api := &TogglApiHttpClient{}
 	api.baseUrl = config.GetTogglServerUrl()
 	api.client = &http.Client{}
 	return api
@@ -31,7 +37,7 @@ type PersonalInfo struct {
 	Fullname string
 }
 
-func (toggl *TogglApi) GetMe() (*Me, error) {
+func (toggl *TogglApiHttpClient) GetMe() (*Me, error) {
 	resp, err := toggl.getAuthenticated("/me")
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("[GetMe] Request failed! Error: %s", err))
@@ -58,7 +64,7 @@ type TimeEntry struct {
 	Tags        []string
 }
 
-func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) ([]TimeEntry, error) {
+func (toggl *TogglApiHttpClient) GetTimeEntries(start time.Time, end time.Time) ([]TimeEntry, error) {
 	params := map[string]string{
 		"start_date": start.Format(time.RFC3339),
 		"end_date":   end.Format(time.RFC3339),
@@ -89,7 +95,7 @@ type ProjectData struct {
 	Name string
 }
 
-func (toggl *TogglApi) GetProjectById(pid int) (*Project, error) {
+func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
 	resp, err := toggl.getAuthenticated("/projects/" + strconv.Itoa(pid))
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("[GetProjectById] Request failed! Error: %s", err))
@@ -106,7 +112,7 @@ func (toggl *TogglApi) GetProjectById(pid int) (*Project, error) {
 	return &data, resp.Body.Close()
 }
 
-func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
+func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", toggl.baseUrl+path, nil)
 	if err != nil {
 		return nil, err
@@ -124,7 +130,7 @@ func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[s
 	return toggl.client.Do(req)
 }
 
-func (toggl *TogglApi) getAuthenticated(path string) (*http.Response, error) {
+func (toggl *TogglApiHttpClient) getAuthenticated(path string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", toggl.baseUrl+path, nil)
 	if err != nil {
 		return nil, err

@@ -13,16 +13,21 @@ import (
 
 const workLogEntryCommentFooter = "Added automatically by toggl-sync"
 
-type JiraApi struct {
+type JiraApi interface {
+	LogWork(ticket string, timeSpent time.Duration) error
+	LogWorkWithUserDescription(ticket string, description string, timeSpent time.Duration) error
+}
+
+type JiraApiHttpClient struct {
 	baseUrl string
 	client  *http.Client
 }
 
-func NewJiraApi() (api *JiraApi) {
-	api = &JiraApi{}
+func NewJiraApi() JiraApi {
+	api := &JiraApiHttpClient{}
 	api.baseUrl = config.GetJiraServerUrl() + "/rest/api/latest"
 	api.client = &http.Client{}
-	return
+	return api
 }
 
 type WorkLogEntry struct {
@@ -30,7 +35,7 @@ type WorkLogEntry struct {
 	TimeSpentSeconds int    `json:"timeSpentSeconds"`
 }
 
-func (jira *JiraApi) LogWorkWithUserDescription(ticket string, userDescription string, timeSpent time.Duration) (err error) {
+func (jira *JiraApiHttpClient) LogWorkWithUserDescription(ticket string, userDescription string, timeSpent time.Duration) (err error) {
 	entry := createWorkLogEntryWithUserDescription(userDescription, timeSpent)
 	return jira.logEntry(ticket, entry)
 }
@@ -42,7 +47,7 @@ func createWorkLogEntryWithUserDescription(userDescription string, timeSpent tim
 	}
 }
 
-func (jira *JiraApi) LogWork(ticket string, timeSpent time.Duration) (err error) {
+func (jira *JiraApiHttpClient) LogWork(ticket string, timeSpent time.Duration) (err error) {
 	entry := createWorkLogEntry(timeSpent)
 	return jira.logEntry(ticket, entry)
 }
@@ -54,7 +59,7 @@ func createWorkLogEntry(timeSpent time.Duration) *WorkLogEntry {
 	}
 }
 
-func (jira *JiraApi) logEntry(ticket string, entry *WorkLogEntry) error {
+func (jira *JiraApiHttpClient) logEntry(ticket string, entry *WorkLogEntry) error {
 	entryJson, err := json.Marshal(entry)
 	if err != nil {
 		return errors.New(fmt.Sprintf("[LogWork] Marshalling of work entry failed! Error: %s", err))
@@ -70,7 +75,7 @@ func (jira *JiraApi) logEntry(ticket string, entry *WorkLogEntry) error {
 	return resp.Body.Close()
 }
 
-func (jira *JiraApi) postAuthenticated(path string, body io.Reader) (resp *http.Response, err error) {
+func (jira *JiraApiHttpClient) postAuthenticated(path string, body io.Reader) (resp *http.Response, err error) {
 	req, err := http.NewRequest("POST", jira.baseUrl+path, body)
 	if err != nil {
 		return
