@@ -8,6 +8,7 @@ import (
 
 const togglUsernameKey = "toggl.username"
 const togglPasswordKey = "toggl.password"
+const togglServerUrlKey = "toggl.server.url"
 const jiraServerUrlKey = "jira.server.url"
 const jiraUsernameKey = "jira.username"
 const jiraPasswordKey = "jira.password"
@@ -48,6 +49,14 @@ func GetTogglPassword() string {
 
 func SetTogglPassword(password string) {
 	viper.Set(togglPasswordKey, password)
+}
+
+func GetTogglServerUrl() string {
+	return viper.GetString(togglServerUrlKey)
+}
+
+func SetTogglServerUrl(serverUrl string) {
+	viper.Set(togglServerUrlKey, serverUrl)
 }
 
 func GetJiraServerUrl() string {

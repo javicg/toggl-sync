@@ -18,11 +18,9 @@ func TestJiraApi_LogWork(t *testing.T) {
 
 	server := NewHttpServer().
 		StubApi(&Stubbing{
-			Endpoint: "/issue/" + ticket + "/worklog",
-			RequestValidator: func(r *http.Request) {
-				validateBodyIsExactly(t, r, expectedEntry)
-			},
-			ResponseCode: http.StatusCreated,
+			Endpoint:         "/issue/" + ticket + "/worklog",
+			RequestValidator: validateBodyMatches(t, expectedEntry),
+			ResponseCode:     http.StatusCreated,
 		}).
 		Create()
 	defer server.Close()
@@ -65,11 +63,9 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 
 	server := NewHttpServer().
 		StubApi(&Stubbing{
-			Endpoint: "/issue/" + ticket + "/worklog",
-			RequestValidator: func(r *http.Request) {
-				validateBodyIsExactly(t, r, expectedEntry)
-			},
-			ResponseCode: http.StatusCreated,
+			Endpoint:         "/issue/" + ticket + "/worklog",
+			RequestValidator: validateBodyMatches(t, expectedEntry),
+			ResponseCode:     http.StatusCreated,
 		}).
 		Create()
 	defer server.Close()
@@ -83,19 +79,21 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 	}
 }
 
-func validateBodyIsExactly(t *testing.T, r *http.Request, expectedEntry WorkLogEntry) {
-	bytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		t.Errorf("Parsing request body failed with an error: %s", err)
-	} else {
-		var payload WorkLogEntry
-		err := json.Unmarshal(bytes, &payload)
+func validateBodyMatches(t *testing.T, expectedBody WorkLogEntry) func(*http.Request) {
+	return func(r *http.Request) {
+		bytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			t.Errorf("JSON unmarshalling failed: %s", err)
-		}
+			t.Errorf("Parsing request body failed with an error: %s", err)
+		} else {
+			var body WorkLogEntry
+			err := json.Unmarshal(bytes, &body)
+			if err != nil {
+				t.Errorf("JSON unmarshalling failed: %s", err)
+			}
 
-		if payload != expectedEntry {
-			t.Errorf("Unexpected payload: was [%#v] instead of [%#v]", payload, expectedEntry)
+			if body != expectedBody {
+				t.Errorf("Unexpected payload: was [%#v] instead of [%#v]", body, expectedBody)
+			}
 		}
 	}
 }

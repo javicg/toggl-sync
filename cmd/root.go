@@ -172,13 +172,18 @@ func logProjectWorkOnJira(jiraApi *api.JiraApi, entry api.TimeEntry) {
 }
 
 func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry api.TimeEntry) {
-	project := togglApi.GetProjectById(entry.Pid)
-	if key := config.GetOverheadKey(project.Data.Name); key == "" {
+	project, err := togglApi.GetProjectById(entry.Pid)
+	if err != nil {
+		log.Printf("No time logged for [%s]; retrieving project information failed with an error: %s", entry.Description, err)
+		return
+	}
+
+	if config.GetOverheadKey(project.Data.Name) == "" {
 		requestOverheadKey(entry, project)
 	}
 
 	key := config.GetOverheadKey(project.Data.Name)
-	err := jiraApi.LogWorkWithUserDescription(key, entry.Description, time.Duration(entry.Duration)*time.Second)
+	err = jiraApi.LogWorkWithUserDescription(key, entry.Description, time.Duration(entry.Duration)*time.Second)
 	if err != nil {
 		log.Printf("No time logged for [%s] (project [%s]); operation failed with an error: %s", entry.Description, project.Data.Name, err)
 	} else {
@@ -186,7 +191,7 @@ func logOverheadWorkOnJira(togglApi *api.TogglApi, jiraApi *api.JiraApi, entry a
 	}
 }
 
-func requestOverheadKey(entry api.TimeEntry, project api.ProjectData) {
+func requestOverheadKey(entry api.TimeEntry, project *api.Project) {
 	fmt.Printf("No configuration found for entry [%s] (project [%s]). Which Jira ticket should be used for this type of work? -> ", entry.Description, project.Data.Name)
 	reader := bufio.NewReader(os.Stdin)
 

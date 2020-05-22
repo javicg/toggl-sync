@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -78,4 +79,9 @@ func (server *MockHttpServer) handleMatchingStub(endpoint string, w http.Respons
 	} else {
 		w.WriteHeader(stub.statusCode)
 	}
+}
+
+func AsJsonString(something interface{}) string {
+	bytes, _ := json.Marshal(something)
+	return string(bytes)
 }

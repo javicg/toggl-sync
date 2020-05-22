@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/javicg/toggl-sync/config"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,33 +17,35 @@ type TogglApi struct {
 
 func NewTogglApi() (api *TogglApi) {
 	api = &TogglApi{}
-	api.baseUrl = "https://www.toggl.com/api/v8"
+	api.baseUrl = config.GetTogglServerUrl()
 	api.client = &http.Client{}
 	return api
 }
 
 type Me struct {
-	Data struct {
-		Email    string
-		Fullname string
-	}
+	Data PersonalInfo
 }
 
-func (toggl *TogglApi) GetMe() (me Me, err error) {
+type PersonalInfo struct {
+	Email    string
+	Fullname string
+}
+
+func (toggl *TogglApi) GetMe() (*Me, error) {
 	resp, err := toggl.getAuthenticated("/me")
 	if err != nil {
-		log.Fatalln("[GetMe] Request failed! Error:", err)
+		return nil, errors.New(fmt.Sprintf("[GetMe] Request failed! Error: %s", err))
 	} else if resp.StatusCode != 200 {
-		log.Fatalf("[GetMe] Request failed with status: %d", resp.StatusCode)
+		return nil, errors.New(fmt.Sprintf("[GetMe] Request failed with status: %d", resp.StatusCode))
 	}
-	defer resp.Body.Close()
 
+	var me Me
 	err = json.NewDecoder(resp.Body).Decode(&me)
 	if err != nil {
-		log.Fatalln("[GetMe] Error unmarshalling response:", err)
+		return nil, errors.New(fmt.Sprintf("[GetMe] Error unmarshalling response: %s", err))
 	}
 
-	return
+	return &me, resp.Body.Close()
 }
 
 type TimeEntry struct {
@@ -55,7 +58,7 @@ type TimeEntry struct {
 	Tags        []string
 }
 
-func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) (entries []TimeEntry, err error) {
+func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) ([]TimeEntry, error) {
 	params := map[string]string{
 		"start_date": start.Format(time.RFC3339),
 		"end_date":   end.Format(time.RFC3339),
@@ -63,48 +66,50 @@ func (toggl *TogglApi) GetTimeEntries(start time.Time, end time.Time) (entries [
 
 	resp, err := toggl.getAuthenticatedWithQueryParams("/time_entries", params)
 	if err != nil {
-		log.Fatalln("[GetTimeEntries] Request failed! Error:", err)
+		return nil, errors.New(fmt.Sprintf("[GetTimeEntries] Request failed! Error: %s", err))
 	} else if resp.StatusCode != 200 {
-		log.Fatalf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode)
+		return nil, errors.New(fmt.Sprintf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode))
 	}
-	defer resp.Body.Close()
 
+	var entries []TimeEntry
 	err = json.NewDecoder(resp.Body).Decode(&entries)
 	if err != nil {
-		log.Fatalln("[GetTimeEntries] Error unmarshalling response:", err)
+		return nil, errors.New(fmt.Sprintf("[GetTimeEntries] Error unmarshalling response: %s", err))
 	}
 
-	return
+	return entries, resp.Body.Close()
+}
+
+type Project struct {
+	Data ProjectData
 }
 
 type ProjectData struct {
-	Data struct {
-		Id   int
-		Name string
-	}
+	Id   int
+	Name string
 }
 
-func (toggl *TogglApi) GetProjectById(pid int) (data ProjectData) {
+func (toggl *TogglApi) GetProjectById(pid int) (*Project, error) {
 	resp, err := toggl.getAuthenticated("/projects/" + strconv.Itoa(pid))
 	if err != nil {
-		log.Fatalln("[GetProjectById] Request failed! Error:", err)
+		return nil, errors.New(fmt.Sprintf("[GetProjectById] Request failed! Error: %s", err))
 	} else if resp.StatusCode != 200 {
-		log.Fatalf("[GetProjectById] Request failed with status: %d", resp.StatusCode)
+		return nil, errors.New(fmt.Sprintf("[GetProjectById] Request failed with status: %d", resp.StatusCode))
 	}
-	defer resp.Body.Close()
 
+	var data Project
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		log.Fatalln("[GetProjectById] Error unmarshalling response:", err)
+		return nil, errors.New(fmt.Sprintf("[GetProjectById] Error unmarshalling response: %s", err))
 	}
 
-	return
+	return &data, resp.Body.Close()
 }
 
-func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[string]string) (resp *http.Response, err error) {
+func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", toggl.baseUrl+path, nil)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	req.SetBasicAuth(config.GetTogglUsername(), config.GetTogglPassword())
@@ -119,10 +124,10 @@ func (toggl *TogglApi) getAuthenticatedWithQueryParams(path string, params map[s
 	return toggl.client.Do(req)
 }
 
-func (toggl *TogglApi) getAuthenticated(path string) (resp *http.Response, err error) {
+func (toggl *TogglApi) getAuthenticated(path string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", toggl.baseUrl+path, nil)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	req.SetBasicAuth(config.GetTogglUsername(), config.GetTogglPassword())

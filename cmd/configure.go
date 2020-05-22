@@ -41,6 +41,7 @@ func configure() {
 func updateConfiguration() {
 	saveSettingAs("Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
 	saveSettingAs("Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
+	config.SetTogglServerUrl("https://www.toggl.com/api/v8")
 	saveSettingAs("Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
 	saveSettingAs("Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
 	saveSettingAs("Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
