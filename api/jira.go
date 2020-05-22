@@ -3,10 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -54,17 +54,17 @@ func createWorkLogEntry(timeSpent time.Duration) *WorkLogEntry {
 	}
 }
 
-func (jira *JiraApi) logEntry(ticket string, entry *WorkLogEntry) (err error) {
+func (jira *JiraApi) logEntry(ticket string, entry *WorkLogEntry) error {
 	entryJson, err := json.Marshal(entry)
 	if err != nil {
-		log.Fatalln("[LogWork] Marshalling of work entry failed! Error:", err)
+		return errors.New(fmt.Sprintf("[LogWork] Marshalling of work entry failed! Error: %s", err))
 	}
 
 	resp, err := jira.postAuthenticated("/issue/"+ticket+"/worklog", bytes.NewBuffer(entryJson))
 	if err != nil {
-		return
+		return err
 	} else if resp.StatusCode != 201 {
-		log.Fatalf("[LogWork] Request failed with status: %d", resp.StatusCode)
+		return errors.New(fmt.Sprintf("[LogWork] Request to log work for ticket [%s] failed with status [%d]", ticket, resp.StatusCode))
 	}
 
 	return resp.Body.Close()
