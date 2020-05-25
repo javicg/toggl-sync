@@ -4,13 +4,14 @@
 
 Application to synchronize Toggl entries to Jira.
 
-![Toggl UI](.github/assets/toggl-ui.png)
-
 At our company, logging work on Jira helps us visualize if we are focusing on the right things,
 or if we are spending too much time on other work (meetings, support, etc).
 
-Most of us use [Toggl](https://toggl.com/) for time tracking, but then have to spend time updating our work logs on Jira...
-and this is not fun to do.
+Most of us use [Toggl](https://toggl.com/) for time tracking...
+
+![Toggl UI](.github/assets/toggl-ui.png)
+
+... but then have to spend time updating our work logs on Jira, and this is not fun to do.
 
 This small application helps synchronizing all those Toggl entries to Jira, following very simple naming conventions.
 
