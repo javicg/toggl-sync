@@ -96,6 +96,36 @@ func TestUpdateConfiguration_PreserveExistingValuesOnEmptyInput(t *testing.T) {
 	assertConfigValue(t, "Jira server url", config.GetJiraProjectKey(), "updatedValue")
 }
 
+func TestUpdateConfiguration_OverrideOverheadKeys(t *testing.T) {
+	config.SetOverheadKey("meetings", "ENG-1234")
+	config.SetOverheadKey("cooking", "ENG-1007")
+	err := updateConfiguration(&MockInputController{
+		TextInput: "value",
+		Password:  "secret",
+	})
+	if err != nil {
+		t.Errorf("updateConfiguration failed: %s", err)
+	}
+
+	assertConfigValue(t, "jira.overhead.meetings", config.GetOverheadKey("meetings"), "value")
+	assertConfigValue(t, "jira.overhead.cooking", config.GetOverheadKey("cooking"), "value")
+}
+
+func TestUpdateConfiguration_PreserveOverheadKeysOnEmptyInput(t *testing.T) {
+	config.SetOverheadKey("meetings", "ENG-1234")
+	config.SetOverheadKey("cooking", "ENG-1007")
+	err := updateConfiguration(&MockInputController{
+		TextInput: "",
+		Password:  "secret",
+	})
+	if err != nil {
+		t.Errorf("updateConfiguration failed: %s", err)
+	}
+
+	assertConfigValue(t, "jira.overhead.meetings", config.GetOverheadKey("meetings"), "ENG-1234")
+	assertConfigValue(t, "jira.overhead.cooking", config.GetOverheadKey("cooking"), "ENG-1007")
+}
+
 func TestUpdateConfiguration_PropagateErrorWhenReadTextInputFails(t *testing.T) {
 	err := updateConfiguration(&MockInputController{
 		TextInputError: errors.New("stub error"),

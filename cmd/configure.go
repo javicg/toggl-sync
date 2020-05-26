@@ -69,6 +69,17 @@ func updateConfiguration(inputCtrl InputController) (err error) {
 	if err != nil {
 		return
 	}
+	for _, key := range config.GetAllOverheadKeys() {
+		getOverheadFn := func() string {
+			return config.GetOverheadKey(key)
+		}
+		saveOverheadFn := func(value string) {
+			config.SetOverheadKey(key, value)
+		}
+		if err = saveSettingAs(inputCtrl, fmt.Sprintf("Overhead - %s", key), getOverheadFn, saveOverheadFn, false); err != nil {
+			return
+		}
+	}
 	return
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 const togglUsernameKey = "toggl.username"
@@ -89,6 +90,16 @@ func GetJiraProjectKey() string {
 
 func SetJiraProjectKey(projectKey string) {
 	viper.Set(jiraProjectKeyKey, projectKey)
+}
+
+func GetAllOverheadKeys() []string {
+	overheadKeys := make([]string, 0)
+	for _, key := range viper.AllKeys() {
+		if keyName := strings.TrimPrefix(key, jiraOverheadKeyPrefix+"."); !strings.EqualFold(key, keyName) {
+			overheadKeys = append(overheadKeys, keyName)
+		}
+	}
+	return overheadKeys
 }
 
 func GetOverheadKey(key string) string {
