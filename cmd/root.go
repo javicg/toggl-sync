@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/api"
 	"github.com/javicg/toggl-sync/config"
@@ -40,6 +39,7 @@ func init() {
 	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry-run toggl-sync (avoid side effects)")
 }
 
+// Execute runs the main command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatalln(err)
@@ -91,7 +91,7 @@ func sync(inputCtrl InputController, togglApi api.TogglApi, jiraApi api.JiraApi,
 		log.Print("Found issues during validation:")
 		fmt.Print(message)
 		log.Print("Please, correct the time entries above and try again.")
-		return errors.New("validation failed")
+		return fmt.Errorf("validation failed")
 	}
 
 	if dryRun {
@@ -107,7 +107,7 @@ func printUserDetails(togglApi api.TogglApi) error {
 	log.Print("Fetching user details...")
 	me, err := togglApi.GetMe()
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error fetching user details: %s", err))
+		return fmt.Errorf("error fetching user details: %s", err)
 	}
 
 	log.Print("User details:")
@@ -122,12 +122,12 @@ const (
 func getTimeEntriesForDate(togglApi api.TogglApi, dateStr string) ([]api.TimeEntry, error) {
 	startDate, err := time.Parse(layoutDateISO, dateStr)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error parsing input date: %s", err))
+		return nil, fmt.Errorf("error parsing input date: %s", err)
 	}
 
 	entries, err := togglApi.GetTimeEntries(startDate, startDate.AddDate(0, 0, 1))
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error retrieving time entries: %s", err))
+		return nil, fmt.Errorf("error retrieving time entries: %s", err)
 	}
 
 	return entries, nil
@@ -213,7 +213,7 @@ func requestOverheadKey(inputCtrl InputController, entry api.TimeEntry, project 
 	description := fmt.Sprintf("No configuration found for entry [%s] (project [%s]). Which Jira ticket should be used for this type of work? -> ", entry.Description, project.Data.Name)
 	input, err := inputCtrl.RequestTextInput(description)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error reading input: %s", err))
+		return fmt.Errorf("error reading input: %s", err)
 	}
 	input = strings.TrimSpace(input)
 
