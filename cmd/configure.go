@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
@@ -28,16 +27,16 @@ var configureCmd = &cobra.Command{
 func configure(inputCtrl InputController) error {
 	err, _ := config.Init()
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error reading configuration file: %s", err))
+		return fmt.Errorf("error reading configuration file: %s", err)
 	}
 
 	err = updateConfiguration(inputCtrl)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Error updating configuration: %s", err))
+		return fmt.Errorf("error updating configuration: %s", err)
 	}
 
 	if err := config.Persist(); err != nil {
-		return errors.New(fmt.Sprintf("Error saving configuration to file: %s", err))
+		return fmt.Errorf("error saving configuration to file: %s", err)
 	}
 
 	return nil
@@ -110,7 +109,7 @@ func requestTextInput(inputCtrl InputController, inputName string, existingValue
 
 	input, err := inputCtrl.RequestTextInput(description)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Error reading input: %s", err))
+		return "", fmt.Errorf("error reading input: %s", err)
 	}
 	input = strings.TrimSpace(input)
 	return input, nil
@@ -126,7 +125,7 @@ func requestPassword(inputCtrl InputController, inputName string, existingValue 
 
 	pwd, err := inputCtrl.RequestPassword(description)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Error reading input: %s", err))
+		return "", fmt.Errorf("error reading input: %s", err)
 	}
 	pwd = strings.TrimSpace(pwd)
 	return pwd, nil

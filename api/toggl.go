@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"net/http"
@@ -40,15 +39,15 @@ type PersonalInfo struct {
 func (toggl *TogglApiHttpClient) GetMe() (*Me, error) {
 	resp, err := toggl.getAuthenticated("/me")
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("[GetMe] Request failed! Error: %s", err))
+		return nil, fmt.Errorf("[GetMe] Request failed! Error: %s", err)
 	} else if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("[GetMe] Request failed with status: %d", resp.StatusCode))
+		return nil, fmt.Errorf("[GetMe] Request failed with status: %d", resp.StatusCode)
 	}
 
 	var me Me
 	err = json.NewDecoder(resp.Body).Decode(&me)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("[GetMe] Error unmarshalling response: %s", err))
+		return nil, fmt.Errorf("[GetMe] Error unmarshalling response: %s", err)
 	}
 
 	return &me, resp.Body.Close()
@@ -72,15 +71,15 @@ func (toggl *TogglApiHttpClient) GetTimeEntries(start time.Time, end time.Time) 
 
 	resp, err := toggl.getAuthenticatedWithQueryParams("/time_entries", params)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("[GetTimeEntries] Request failed! Error: %s", err))
+		return nil, fmt.Errorf("[GetTimeEntries] Request failed! Error: %s", err)
 	} else if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode))
+		return nil, fmt.Errorf("[GetTimeEntries] Request failed with status: %d", resp.StatusCode)
 	}
 
 	var entries []TimeEntry
 	err = json.NewDecoder(resp.Body).Decode(&entries)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("[GetTimeEntries] Error unmarshalling response: %s", err))
+		return nil, fmt.Errorf("[GetTimeEntries] Error unmarshalling response: %s", err)
 	}
 
 	return entries, resp.Body.Close()
@@ -98,15 +97,15 @@ type ProjectData struct {
 func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
 	resp, err := toggl.getAuthenticated("/projects/" + strconv.Itoa(pid))
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("[GetProjectById] Request failed! Error: %s", err))
+		return nil, fmt.Errorf("[GetProjectById] Request failed! Error: %s", err)
 	} else if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("[GetProjectById] Request failed with status: %d", resp.StatusCode))
+		return nil, fmt.Errorf("[GetProjectById] Request failed with status: %d", resp.StatusCode)
 	}
 
 	var data Project
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("[GetProjectById] Error unmarshalling response: %s", err))
+		return nil, fmt.Errorf("[GetProjectById] Error unmarshalling response: %s", err)
 	}
 
 	return &data, resp.Body.Close()
