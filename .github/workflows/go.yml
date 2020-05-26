@@ -27,3 +27,6 @@ jobs:
 
     - name: Test (with coverage)
       run: go test -v ./... -cover
+
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.7
