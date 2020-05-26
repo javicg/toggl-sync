@@ -1,6 +1,7 @@
 # toggl-sync
 
 ![Go](https://github.com/javicg/toggl-sync/workflows/Go/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/javicg/toggl-sync)](https://goreportcard.com/report/github.com/javicg/toggl-sync)
 [![codecov](https://codecov.io/gh/javicg/toggl-sync/branch/master/graph/badge.svg)](https://codecov.io/gh/javicg/toggl-sync)
 
 Application to synchronize Toggl entries to Jira.
