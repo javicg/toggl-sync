@@ -50,7 +50,7 @@ func SetTogglUsername(username string) {
 	viper.Set(togglUsernameKey, username)
 }
 
-// GetTogglUsername returns the Toggl password from config, if any exists
+// GetTogglPassword returns the Toggl password from config, if any exists
 func GetTogglPassword() string {
 	return viper.GetString(togglPasswordKey)
 }
