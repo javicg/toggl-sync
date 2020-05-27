@@ -9,17 +9,20 @@ import (
 	"time"
 )
 
+// TogglApi is the Toggl API client contract listing all supported calls.
 type TogglApi interface {
 	GetMe() (*Me, error)
 	GetTimeEntries(startDate time.Time, endDate time.Time) ([]TimeEntry, error)
 	GetProjectById(id int) (*Project, error)
 }
 
+// TogglApiHttpClient is the implementation of TogglApi using an HTTP client.
 type TogglApiHttpClient struct {
 	baseUrl string
 	client  *http.Client
 }
 
+// NewTogglApi creates a new API client for Toggl.
 func NewTogglApi() TogglApi {
 	api := &TogglApiHttpClient{}
 	api.baseUrl = config.GetTogglServerUrl()
@@ -27,15 +30,18 @@ func NewTogglApi() TogglApi {
 	return api
 }
 
+// Me is a wrapper over PersonalInfo for data transfer.
 type Me struct {
 	Data PersonalInfo
 }
 
+// PersonalInfo contains personal information about the Toggl user.
 type PersonalInfo struct {
 	Email    string
 	Fullname string
 }
 
+// GetMe retrieves the user profile, using the Toggl credentials stored in the configuration file.
 func (toggl *TogglApiHttpClient) GetMe() (*Me, error) {
 	resp, err := toggl.getAuthenticated("/me")
 	if err != nil {
@@ -53,6 +59,7 @@ func (toggl *TogglApiHttpClient) GetMe() (*Me, error) {
 	return &me, resp.Body.Close()
 }
 
+// TimeEntry contains details about the entry recorded by the user, like description, duration and project/tags associated with it.
 type TimeEntry struct {
 	Id          int
 	Pid         int
@@ -63,6 +70,8 @@ type TimeEntry struct {
 	Tags        []string
 }
 
+// GetTimeEntries retrieves all time entries within a given time period, represented by start and end.
+// It uses the Toggl credentials stored in the configuration file.
 func (toggl *TogglApiHttpClient) GetTimeEntries(start time.Time, end time.Time) ([]TimeEntry, error) {
 	params := map[string]string{
 		"start_date": start.Format(time.RFC3339),
@@ -85,15 +94,19 @@ func (toggl *TogglApiHttpClient) GetTimeEntries(start time.Time, end time.Time) 
 	return entries, resp.Body.Close()
 }
 
+// Project is a wrapper over ProjectData for data transfer.
 type Project struct {
 	Data ProjectData
 }
 
+// ProjectData is a mapping of the project id to the project name.
 type ProjectData struct {
 	Id   int
 	Name string
 }
 
+// GetProjectById retrieves the project data using the specified id.
+// It uses the Toggl credentials stored in the configuration file.
 func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
 	resp, err := toggl.getAuthenticated("/projects/" + strconv.Itoa(pid))
 	if err != nil {

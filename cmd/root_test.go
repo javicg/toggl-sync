@@ -37,7 +37,7 @@ func (mock MockJiraApi) LogWork(string, time.Duration) error {
 	return mock.ApiError
 }
 
-func (mock MockJiraApi) LogWorkWithUserDescription(string, string, time.Duration) error {
+func (mock MockJiraApi) LogWorkWithUserDescription(string, time.Duration, string) error {
 	return mock.ApiError
 }
 

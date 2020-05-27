@@ -11,7 +11,7 @@ import (
 
 func TestJiraApi_LogWork(t *testing.T) {
 	ticket := "EXAMPLE-1234"
-	expectedEntry := WorkLogEntry{
+	expectedEntry := workLogEntry{
 		Comment:          "Added automatically by toggl-sync",
 		TimeSpentSeconds: 60,
 	}
@@ -56,7 +56,7 @@ func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
 
 func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 	ticket := "EXAMPLE-1234"
-	expectedEntry := WorkLogEntry{
+	expectedEntry := workLogEntry{
 		Comment:          "Writing toggl-sync tests\nAdded automatically by toggl-sync",
 		TimeSpentSeconds: 60,
 	}
@@ -73,19 +73,19 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 	config.SetJiraServerUrl(server.URL)
 
 	jiraApi := NewJiraApi()
-	err := jiraApi.LogWorkWithUserDescription(ticket, "Writing toggl-sync tests", time.Duration(60)*time.Second)
+	err := jiraApi.LogWorkWithUserDescription(ticket, time.Duration(60)*time.Second, "Writing toggl-sync tests")
 	if err != nil {
 		t.Errorf("API call failed with an error: %s", err)
 	}
 }
 
-func validateBodyMatches(t *testing.T, expectedBody WorkLogEntry) func(*http.Request) {
+func validateBodyMatches(t *testing.T, expectedBody workLogEntry) func(*http.Request) {
 	return func(r *http.Request) {
 		bytes, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			t.Errorf("Parsing request body failed with an error: %s", err)
 		} else {
-			var body WorkLogEntry
+			var body workLogEntry
 			err := json.Unmarshal(bytes, &body)
 			if err != nil {
 				t.Errorf("JSON unmarshalling failed: %s", err)

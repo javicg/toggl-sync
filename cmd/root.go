@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 		readConfig()
 		validateConfig()
 
-		err := sync(StdInController{}, api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
+		err := sync(stdInController{}, api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
 		if err != nil {
 			log.Fatalf("%s", err)
 		}
@@ -73,7 +73,7 @@ func validateConfig() {
 	}
 }
 
-func sync(inputCtrl InputController, togglApi api.TogglApi, jiraApi api.JiraApi, syncDate string, dryRun bool) error {
+func sync(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, syncDate string, dryRun bool) error {
 	err := printUserDetails(togglApi)
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func printSummary(entries []api.TimeEntry) {
 	}
 }
 
-func logWorkOnJira(inputCtrl InputController, togglApi api.TogglApi, jiraApi api.JiraApi, entries []api.TimeEntry) {
+func logWorkOnJira(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, entries []api.TimeEntry) {
 	log.Print("Logging work on Jira...")
 	for _, entry := range entries {
 		if isJiraTicket(entry) {
@@ -185,7 +185,7 @@ func logProjectWorkOnJira(jiraApi api.JiraApi, entry api.TimeEntry) {
 	}
 }
 
-func logOverheadWorkOnJira(inputCtrl InputController, togglApi api.TogglApi, jiraApi api.JiraApi, entry api.TimeEntry) {
+func logOverheadWorkOnJira(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, entry api.TimeEntry) {
 	project, err := togglApi.GetProjectById(entry.Pid)
 	if err != nil {
 		log.Printf("No time logged for [%s]; retrieving project information failed with an error: %s", entry.Description, err)
@@ -201,7 +201,7 @@ func logOverheadWorkOnJira(inputCtrl InputController, togglApi api.TogglApi, jir
 	}
 
 	key := config.GetOverheadKey(project.Data.Name)
-	err = jiraApi.LogWorkWithUserDescription(key, entry.Description, time.Duration(entry.Duration)*time.Second)
+	err = jiraApi.LogWorkWithUserDescription(key, time.Duration(entry.Duration)*time.Second, entry.Description)
 	if err != nil {
 		log.Printf("No time logged for [%s] (project [%s]); operation failed with an error: %s", entry.Description, project.Data.Name, err)
 	} else {
@@ -209,9 +209,9 @@ func logOverheadWorkOnJira(inputCtrl InputController, togglApi api.TogglApi, jir
 	}
 }
 
-func requestOverheadKey(inputCtrl InputController, entry api.TimeEntry, project *api.Project) error {
+func requestOverheadKey(inputCtrl inputController, entry api.TimeEntry, project *api.Project) error {
 	description := fmt.Sprintf("No configuration found for entry [%s] (project [%s]). Which Jira ticket should be used for this type of work? -> ", entry.Description, project.Data.Name)
-	input, err := inputCtrl.RequestTextInput(description)
+	input, err := inputCtrl.requestTextInput(description)
 	if err != nil {
 		return fmt.Errorf("error reading input: %s", err)
 	}

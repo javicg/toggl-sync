@@ -17,14 +17,14 @@ var configureCmd = &cobra.Command{
 	Short: "Create (or update) toggl-sync configuration",
 	Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := configure(StdInController{})
+		err := configure(stdInController{})
 		if err != nil {
 			log.Fatalf("Error configuring toggl-sync: %s", err)
 		}
 	},
 }
 
-func configure(inputCtrl InputController) error {
+func configure(inputCtrl inputController) error {
 	err, _ := config.Init()
 	if err != nil {
 		return fmt.Errorf("error reading configuration file: %s", err)
@@ -42,7 +42,7 @@ func configure(inputCtrl InputController) error {
 	return nil
 }
 
-func updateConfiguration(inputCtrl InputController) (err error) {
+func updateConfiguration(inputCtrl inputController) (err error) {
 	config.SetTogglServerUrl("https://www.toggl.com/api/v8")
 	err = saveSettingAs(inputCtrl, "Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
 	if err != nil {
@@ -82,7 +82,7 @@ func updateConfiguration(inputCtrl InputController) (err error) {
 	return
 }
 
-func saveSettingAs(inputCtrl InputController, inputName string, getFn func() string, saveFn func(string), isPassword bool) error {
+func saveSettingAs(inputCtrl inputController, inputName string, getFn func() string, saveFn func(string), isPassword bool) error {
 	existingValue := getFn()
 	input, err := requestInput(inputCtrl, inputName, existingValue, isPassword)
 	if err == nil && input != "" {
@@ -91,15 +91,15 @@ func saveSettingAs(inputCtrl InputController, inputName string, getFn func() str
 	return err
 }
 
-func requestInput(inputCtrl InputController, inputName string, existingValue string, isPassword bool) (string, error) {
+func requestInput(inputCtrl inputController, inputName string, existingValue string, isPassword bool) (string, error) {
 	if isPassword {
 		return requestPassword(inputCtrl, inputName, existingValue)
-	} else {
-		return requestTextInput(inputCtrl, inputName, existingValue)
 	}
+
+	return requestTextInput(inputCtrl, inputName, existingValue)
 }
 
-func requestTextInput(inputCtrl InputController, inputName string, existingValue string) (string, error) {
+func requestTextInput(inputCtrl inputController, inputName string, existingValue string) (string, error) {
 	var description string
 	if existingValue != "" {
 		description = fmt.Sprintf("%s (%s): ", inputName, existingValue)
@@ -107,7 +107,7 @@ func requestTextInput(inputCtrl InputController, inputName string, existingValue
 		description = fmt.Sprintf("%s: ", inputName)
 	}
 
-	input, err := inputCtrl.RequestTextInput(description)
+	input, err := inputCtrl.requestTextInput(description)
 	if err != nil {
 		return "", fmt.Errorf("error reading input: %s", err)
 	}
@@ -115,7 +115,7 @@ func requestTextInput(inputCtrl InputController, inputName string, existingValue
 	return input, nil
 }
 
-func requestPassword(inputCtrl InputController, inputName string, existingValue string) (string, error) {
+func requestPassword(inputCtrl inputController, inputName string, existingValue string) (string, error) {
 	var description string
 	if existingValue != "" {
 		description = fmt.Sprintf("%s (*****): ", inputName)
@@ -123,7 +123,7 @@ func requestPassword(inputCtrl InputController, inputName string, existingValue 
 		description = fmt.Sprintf("%s: ", inputName)
 	}
 
-	pwd, err := inputCtrl.RequestPassword(description)
+	pwd, err := inputCtrl.requestPassword(description)
 	if err != nil {
 		return "", fmt.Errorf("error reading input: %s", err)
 	}

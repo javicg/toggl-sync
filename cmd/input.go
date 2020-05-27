@@ -8,20 +8,20 @@ import (
 	"syscall"
 )
 
-type InputController interface {
-	RequestTextInput(string) (string, error)
-	RequestPassword(string) (string, error)
+type inputController interface {
+	requestTextInput(string) (string, error)
+	requestPassword(string) (string, error)
 }
 
-type StdInController struct{}
+type stdInController struct{}
 
-func (StdInController) RequestTextInput(description string) (string, error) {
+func (stdInController) requestTextInput(description string) (string, error) {
 	fmt.Print(description)
 	r := bufio.NewReader(os.Stdin)
 	return r.ReadString('\n')
 }
 
-func (StdInController) RequestPassword(description string) (string, error) {
+func (stdInController) requestPassword(description string) (string, error) {
 	fmt.Print(description)
 	bytes, err := terminal.ReadPassword(syscall.Stdin)
 	fmt.Println()

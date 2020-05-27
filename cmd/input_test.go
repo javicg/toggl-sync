@@ -7,10 +7,10 @@ type MockInputController struct {
 	PasswordError  error
 }
 
-func (mr MockInputController) RequestTextInput(string) (string, error) {
+func (mr MockInputController) requestTextInput(string) (string, error) {
 	return mr.TextInput, mr.TextInputError
 }
 
-func (mr MockInputController) RequestPassword(string) (string, error) {
+func (mr MockInputController) requestPassword(string) (string, error) {
 	return mr.Password, mr.PasswordError
 }
