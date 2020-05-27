@@ -47,7 +47,7 @@ func Execute() {
 }
 
 func readConfig() {
-	err, ok := config.Init()
+	ok, err := config.Init()
 	if err != nil {
 		log.Fatalf("Unable to read configuration: %s", err)
 	}

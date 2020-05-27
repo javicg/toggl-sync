@@ -25,7 +25,7 @@ var configureCmd = &cobra.Command{
 }
 
 func configure(inputCtrl inputController) error {
-	err, _ := config.Init()
+	_, err := config.Init()
 	if err != nil {
 		return fmt.Errorf("error reading configuration file: %s", err)
 	}
