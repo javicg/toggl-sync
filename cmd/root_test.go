@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/javicg/toggl-sync/api"
 	"github.com/javicg/toggl-sync/config"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -80,9 +81,8 @@ func TestSync(t *testing.T) {
 	config.SetJiraProjectKey("ENG")
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }
 
 func TestSync_NoTimeEntries(t *testing.T) {
@@ -101,9 +101,8 @@ func TestSync_NoTimeEntries(t *testing.T) {
 	config.SetJiraProjectKey("ENG")
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }
 
 func TestSync_DryRun(t *testing.T) {
@@ -142,9 +141,8 @@ func TestSync_DryRun(t *testing.T) {
 	config.SetJiraProjectKey("ENG")
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true)
+	assert.Nil(t, err)
 }
 
 func TestSync_DryRun_NoTimeEntries(t *testing.T) {
@@ -165,9 +163,8 @@ func TestSync_DryRun_NoTimeEntries(t *testing.T) {
 	config.SetJiraProjectKey("ENG")
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true)
+	assert.Nil(t, err)
 }
 
 func TestSync_DryRun_ErrorFetchingUserDetails(t *testing.T) {
@@ -178,9 +175,8 @@ func TestSync_DryRun_ErrorFetchingUserDetails(t *testing.T) {
 
 	config.Reset()
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true); err == nil {
-		t.Error("Sync should have failed with an error")
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true)
+	assert.NotNil(t, err)
 }
 
 func TestSync_DryRun_ErrorParsingSyncDate(t *testing.T) {
@@ -196,9 +192,8 @@ func TestSync_DryRun_ErrorParsingSyncDate(t *testing.T) {
 
 	config.Reset()
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2nd January 2006", true); err == nil {
-		t.Error("Sync should have failed with an error")
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2nd January 2006", true)
+	assert.NotNil(t, err)
 }
 
 func TestSync_DryRun_ErrorFetchingTimeEntries(t *testing.T) {
@@ -215,9 +210,8 @@ func TestSync_DryRun_ErrorFetchingTimeEntries(t *testing.T) {
 
 	config.Reset()
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true); err == nil {
-		t.Error("Sync should have failed with an error")
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true)
+	assert.NotNil(t, err)
 }
 
 func TestSync_DryRun_ValidationFailed_EmptyDescription(t *testing.T) {
@@ -240,9 +234,8 @@ func TestSync_DryRun_ValidationFailed_EmptyDescription(t *testing.T) {
 	config.Reset()
 	config.SetJiraProjectKey("ENG")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true); err == nil {
-		t.Error("Sync should have failed with an error")
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true)
+	assert.NotNil(t, err)
 }
 
 func TestSync_DryRun_ValidationFailed_OverheadWorkWithoutProjectId(t *testing.T) {
@@ -266,9 +259,8 @@ func TestSync_DryRun_ValidationFailed_OverheadWorkWithoutProjectId(t *testing.T)
 	config.Reset()
 	config.SetJiraProjectKey("ENG")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true); err == nil {
-		t.Error("Sync should have failed with an error")
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", true)
+	assert.NotNil(t, err)
 }
 
 func TestSync_ErrorLoggingProjectWork_ShouldNotStopSync(t *testing.T) {
@@ -294,9 +286,8 @@ func TestSync_ErrorLoggingProjectWork_ShouldNotStopSync(t *testing.T) {
 	config.Reset()
 	config.SetJiraProjectKey("ENG")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }
 
 func TestSync_ErrorLoggingOverheadWork_EntryWithoutProjectId_ShouldNotStopSync(t *testing.T) {
@@ -322,9 +313,8 @@ func TestSync_ErrorLoggingOverheadWork_EntryWithoutProjectId_ShouldNotStopSync(t
 	config.Reset()
 	config.SetJiraProjectKey("ENG")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }
 
 func TestSync_ErrorLoggingOverheadWork_ShouldNotStopSync(t *testing.T) {
@@ -358,9 +348,8 @@ func TestSync_ErrorLoggingOverheadWork_ShouldNotStopSync(t *testing.T) {
 	config.SetJiraProjectKey("ENG")
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	if err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(expectNoInput, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }
 
 func TestSync_LoggingOverheadWork_RequestOverheadKey(t *testing.T) {
@@ -394,9 +383,8 @@ func TestSync_LoggingOverheadWork_RequestOverheadKey(t *testing.T) {
 	config.Reset()
 	config.SetJiraProjectKey("ENG")
 
-	if err := sync(inputCtrl, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(inputCtrl, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }
 
 func TestSync_LoggingOverheadWork_ErrorRequestingOverheadKey_ShouldNotStopSync(t *testing.T) {
@@ -430,7 +418,6 @@ func TestSync_LoggingOverheadWork_ErrorRequestingOverheadKey_ShouldNotStopSync(t
 	config.Reset()
 	config.SetJiraProjectKey("ENG")
 
-	if err := sync(inputCtrl, togglApi, jiraApi, "2020-05-22", false); err != nil {
-		t.Errorf("Sync failed with an error: %s", err)
-	}
+	err := sync(inputCtrl, togglApi, jiraApi, "2020-05-22", false)
+	assert.Nil(t, err)
 }

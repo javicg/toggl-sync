@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/javicg/toggl-sync/config"
+	"github.com/stretchr/testify/assert"
 	"net/http"
-	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -30,11 +30,8 @@ func TestTogglApi_GetMe(t *testing.T) {
 
 	togglApi := NewTogglApi()
 	me, err := togglApi.GetMe()
-	if err != nil {
-		t.Errorf("API call failed with an error: %s", err)
-	} else if *me != expectedMe {
-		t.Errorf("Unexpected response: was [%#v] instead of [%#v]", *me, expectedMe)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, expectedMe, *me)
 }
 
 func TestTogglApi_GetMe_ErrorWhenRequestFails(t *testing.T) {
@@ -50,9 +47,7 @@ func TestTogglApi_GetMe_ErrorWhenRequestFails(t *testing.T) {
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetMe()
-	if err == nil {
-		t.Error("API errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "API errors should be returned to the client")
 }
 
 func TestTogglApi_GetMe_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
@@ -69,9 +64,7 @@ func TestTogglApi_GetMe_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetMe()
-	if err == nil {
-		t.Error("JSON marshalling errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "JSON marshalling errors should be returned to the client")
 }
 
 func TestTogglApi_GetTimeEntries(t *testing.T) {
@@ -103,11 +96,8 @@ func TestTogglApi_GetTimeEntries(t *testing.T) {
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
 	endDate, _ := time.Parse("2006-01-02", "2020-05-09")
 	entries, err := togglApi.GetTimeEntries(startDate, endDate)
-	if err != nil {
-		t.Errorf("API call failed with an error: %s", err)
-	} else if !reflect.DeepEqual(entries, expectedTimeEntries) {
-		t.Errorf("Unexpected response: was [%#v] instead of [%#v]", entries, expectedTimeEntries)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, expectedTimeEntries, entries)
 }
 
 func TestTogglApi_GetTimeEntries_ErrorWhenRequestFails(t *testing.T) {
@@ -125,9 +115,7 @@ func TestTogglApi_GetTimeEntries_ErrorWhenRequestFails(t *testing.T) {
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
 	endDate, _ := time.Parse("2006-01-02", "2020-05-09")
 	_, err := togglApi.GetTimeEntries(startDate, endDate)
-	if err == nil {
-		t.Error("API errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "API errors should be returned to the client")
 }
 
 func TestTogglApi_GetTimeEntries_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
@@ -146,9 +134,7 @@ func TestTogglApi_GetTimeEntries_ErrorWhenResponseHasUnexpectedFormat(t *testing
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
 	endDate, _ := time.Parse("2006-01-02", "2020-05-09")
 	_, err := togglApi.GetTimeEntries(startDate, endDate)
-	if err == nil {
-		t.Error("JSON marshalling errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "JSON marshalling errors should be returned to the client")
 }
 
 func TestTogglApi_GetProjectById(t *testing.T) {
@@ -173,11 +159,8 @@ func TestTogglApi_GetProjectById(t *testing.T) {
 
 	togglApi := NewTogglApi()
 	project, err := togglApi.GetProjectById(projectId)
-	if err != nil {
-		t.Errorf("API call failed with an error: %s", err)
-	} else if *project != expectedProject {
-		t.Errorf("Unexpected response: was [%#v] instead of [%#v]", *project, expectedProject)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, expectedProject, *project)
 }
 
 func TestTogglApi_GetProjectById_ErrorWhenRequestFails(t *testing.T) {
@@ -195,9 +178,7 @@ func TestTogglApi_GetProjectById_ErrorWhenRequestFails(t *testing.T) {
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetProjectById(projectId)
-	if err == nil {
-		t.Error("API errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "API errors should be returned to the client")
 }
 
 func TestTogglApi_GetProjectById_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
@@ -216,7 +197,5 @@ func TestTogglApi_GetProjectById_ErrorWhenResponseHasUnexpectedFormat(t *testing
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetProjectById(projectId)
-	if err == nil {
-		t.Error("JSON marshalling errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "JSON marshalling errors should be returned to the client")
 }

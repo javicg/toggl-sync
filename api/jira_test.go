@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/javicg/toggl-sync/config"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -29,9 +30,7 @@ func TestJiraApi_LogWork(t *testing.T) {
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWork(ticket, time.Duration(60)*time.Second)
-	if err != nil {
-		t.Errorf("API call failed with an error: %s", err)
-	}
+	assert.Nil(t, err)
 }
 
 func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
@@ -49,9 +48,7 @@ func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWork(ticket, time.Duration(60)*time.Second)
-	if err == nil {
-		t.Error("API errors should be returned to the client")
-	}
+	assert.NotNilf(t, err, "API errors should be returned to the client")
 }
 
 func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
@@ -74,9 +71,7 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWorkWithUserDescription(ticket, time.Duration(60)*time.Second, "Writing toggl-sync tests")
-	if err != nil {
-		t.Errorf("API call failed with an error: %s", err)
-	}
+	assert.Nil(t, err)
 }
 
 func validateBodyMatches(t *testing.T, expectedBody workLogEntry) func(*http.Request) {

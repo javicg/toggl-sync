@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"github.com/javicg/toggl-sync/config"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -16,13 +17,13 @@ func TestUpdateConfiguration(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	assertConfigValue(t, "Toggl username", config.GetTogglUsername(), "value")
-	assertConfigValue(t, "Toggl password", config.GetTogglPassword(), "secret")
-	assertConfigValue(t, "Toggl server url", config.GetTogglServerUrl(), "https://www.toggl.com/api/v8")
-	assertConfigValue(t, "Jira username", config.GetJiraUsername(), "value")
-	assertConfigValue(t, "Jira password", config.GetJiraPassword(), "secret")
-	assertConfigValue(t, "Jira server url", config.GetJiraServerUrl(), "value")
-	assertConfigValue(t, "Jira server url", config.GetJiraProjectKey(), "value")
+	assert.Equal(t, "value", config.GetTogglUsername())
+	assert.Equal(t, "secret", config.GetTogglPassword())
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.GetTogglServerUrl())
+	assert.Equal(t, "value", config.GetJiraUsername())
+	assert.Equal(t, "secret", config.GetJiraPassword())
+	assert.Equal(t, "value", config.GetJiraServerUrl())
+	assert.Equal(t, "value", config.GetJiraProjectKey())
 }
 
 func TestUpdateConfiguration_TrimInputValues(t *testing.T) {
@@ -35,13 +36,13 @@ func TestUpdateConfiguration_TrimInputValues(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	assertConfigValue(t, "Toggl username", config.GetTogglUsername(), "value")
-	assertConfigValue(t, "Toggl password", config.GetTogglPassword(), "secret")
-	assertConfigValue(t, "Toggl server url", config.GetTogglServerUrl(), "https://www.toggl.com/api/v8")
-	assertConfigValue(t, "Jira username", config.GetJiraUsername(), "value")
-	assertConfigValue(t, "Jira password", config.GetJiraPassword(), "secret")
-	assertConfigValue(t, "Jira server url", config.GetJiraServerUrl(), "value")
-	assertConfigValue(t, "Jira server url", config.GetJiraProjectKey(), "value")
+	assert.Equal(t, "value", config.GetTogglUsername())
+	assert.Equal(t, "secret", config.GetTogglPassword())
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.GetTogglServerUrl())
+	assert.Equal(t, "value", config.GetJiraUsername())
+	assert.Equal(t, "secret", config.GetJiraPassword())
+	assert.Equal(t, "value", config.GetJiraServerUrl())
+	assert.Equal(t, "value", config.GetJiraProjectKey())
 }
 
 func TestUpdateConfiguration_OverrideExistingValues(t *testing.T) {
@@ -61,13 +62,13 @@ func TestUpdateConfiguration_OverrideExistingValues(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	assertConfigValue(t, "Toggl username", config.GetTogglUsername(), "updatedValue")
-	assertConfigValue(t, "Toggl password", config.GetTogglPassword(), "updatedSecret")
-	assertConfigValue(t, "Toggl server url", config.GetTogglServerUrl(), "https://www.toggl.com/api/v8")
-	assertConfigValue(t, "Jira username", config.GetJiraUsername(), "updatedValue")
-	assertConfigValue(t, "Jira password", config.GetJiraPassword(), "updatedSecret")
-	assertConfigValue(t, "Jira server url", config.GetJiraServerUrl(), "updatedValue")
-	assertConfigValue(t, "Jira server url", config.GetJiraProjectKey(), "updatedValue")
+	assert.Equal(t, "updatedValue", config.GetTogglUsername())
+	assert.Equal(t, "updatedSecret", config.GetTogglPassword())
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.GetTogglServerUrl())
+	assert.Equal(t, "updatedValue", config.GetJiraUsername())
+	assert.Equal(t, "updatedSecret", config.GetJiraPassword())
+	assert.Equal(t, "updatedValue", config.GetJiraServerUrl())
+	assert.Equal(t, "updatedValue", config.GetJiraProjectKey())
 }
 
 func TestUpdateConfiguration_PreserveExistingValuesOnEmptyInput(t *testing.T) {
@@ -87,13 +88,13 @@ func TestUpdateConfiguration_PreserveExistingValuesOnEmptyInput(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	assertConfigValue(t, "Toggl username", config.GetTogglUsername(), "updatedValue")
-	assertConfigValue(t, "Toggl password", config.GetTogglPassword(), "secret")
-	assertConfigValue(t, "Toggl server url", config.GetTogglServerUrl(), "https://www.toggl.com/api/v8")
-	assertConfigValue(t, "Jira username", config.GetJiraUsername(), "updatedValue")
-	assertConfigValue(t, "Jira password", config.GetJiraPassword(), "secret")
-	assertConfigValue(t, "Jira server url", config.GetJiraServerUrl(), "updatedValue")
-	assertConfigValue(t, "Jira server url", config.GetJiraProjectKey(), "updatedValue")
+	assert.Equal(t, "updatedValue", config.GetTogglUsername())
+	assert.Equal(t, "secret", config.GetTogglPassword())
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.GetTogglServerUrl())
+	assert.Equal(t, "updatedValue", config.GetJiraUsername())
+	assert.Equal(t, "secret", config.GetJiraPassword())
+	assert.Equal(t, "updatedValue", config.GetJiraServerUrl())
+	assert.Equal(t, "updatedValue", config.GetJiraProjectKey())
 }
 
 func TestUpdateConfiguration_OverrideOverheadKeys(t *testing.T) {
@@ -107,8 +108,8 @@ func TestUpdateConfiguration_OverrideOverheadKeys(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	assertConfigValue(t, "jira.overhead.meetings", config.GetOverheadKey("meetings"), "value")
-	assertConfigValue(t, "jira.overhead.cooking", config.GetOverheadKey("cooking"), "value")
+	assert.Equal(t, "value", config.GetOverheadKey("meetings"))
+	assert.Equal(t, "value", config.GetOverheadKey("cooking"))
 }
 
 func TestUpdateConfiguration_PreserveOverheadKeysOnEmptyInput(t *testing.T) {
@@ -122,8 +123,8 @@ func TestUpdateConfiguration_PreserveOverheadKeysOnEmptyInput(t *testing.T) {
 		t.Errorf("updateConfiguration failed: %s", err)
 	}
 
-	assertConfigValue(t, "jira.overhead.meetings", config.GetOverheadKey("meetings"), "ENG-1234")
-	assertConfigValue(t, "jira.overhead.cooking", config.GetOverheadKey("cooking"), "ENG-1007")
+	assert.Equal(t, "ENG-1234", config.GetOverheadKey("meetings"))
+	assert.Equal(t, "ENG-1007", config.GetOverheadKey("cooking"))
 }
 
 func TestUpdateConfiguration_PropagateErrorWhenReadTextInputFails(t *testing.T) {
@@ -131,9 +132,7 @@ func TestUpdateConfiguration_PropagateErrorWhenReadTextInputFails(t *testing.T) 
 		TextInputError: errors.New("stub error"),
 		Password:       "secret",
 	})
-	if err == nil {
-		t.Error("Input errors should be propagated back to the client")
-	}
+	assert.NotNilf(t, err, "Input errors should be propagated back to the client")
 }
 
 func TestUpdateConfiguration_PropagateErrorWhenReadPasswordFails(t *testing.T) {
@@ -141,13 +140,5 @@ func TestUpdateConfiguration_PropagateErrorWhenReadPasswordFails(t *testing.T) {
 		TextInput:     "value",
 		PasswordError: errors.New("stub error"),
 	})
-	if err == nil {
-		t.Error("Input errors should be propagated back to the client")
-	}
-}
-
-func assertConfigValue(t *testing.T, configName string, value string, expectedValue string) {
-	if value != expectedValue {
-		t.Errorf("Expecting %s value to equal [%s] but was [%s]", configName, expectedValue, value)
-	}
+	assert.NotNilf(t, err, "Input errors should be propagated back to the client")
 }
