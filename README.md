@@ -26,6 +26,7 @@ This is the naming convention of Jira tickets.
 These are normally grouped together under some category (e.g. `Meetings`).
 At our company, we have _overhead tickets_ to track the time spent on these type of sessions.
 
-_Project_ work can be logged directly, but _Overhead_ work needs extra input from the user (i.e. which Jira ticket should be used to log work against).
+_Project_ work can be logged directly, but _Overhead_ work needs extra input from the user
+(i.e. which Jira ticket should be used to log work against).
 
 `toggl-sync` will remember any configuration values provided by the user, so subsequent runs should be smooth and pain-free.
