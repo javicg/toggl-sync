@@ -13,18 +13,21 @@ import (
 var dryRun bool
 
 var rootCmd = &cobra.Command{
-	Use:   "toggl-sync date",
+	Use:   "toggl-sync [date]",
 	Short: "Synchronize time entries to Jira",
 	Long:  "Synchronize time entries to Jira using predefined project keys",
-	Args:  cobra.MinimumNArgs(1),
+	Args:  cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
-		syncDate := args[0]
+		syncDate, err := extractDateToSync(args)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		readConfig()
 		validateConfig()
 
-		err := sync(stdInController{}, api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
+		err = sync(stdInController{}, api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
 		if err != nil {
-			log.Fatalf("%s", err)
+			log.Fatalln(err)
 		}
 
 		if !dryRun {
@@ -33,6 +36,16 @@ var rootCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func extractDateToSync(args []string) (syncDate string, err error) {
+	if len(args) == 1 {
+		return args[0], nil
+	}
+	if len(args) == 0 {
+		return time.Now().Format("2006-01-02"), nil
+	}
+	return "", fmt.Errorf("requires 0 or 1 arg(s) but received %d", len(args))
 }
 
 func init() {
@@ -84,7 +97,7 @@ func sync(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi,
 		return err
 	}
 
-	printSummary(entries)
+	printSummary(syncDate, entries)
 
 	ok, message := validateEntries(entries)
 	if !ok {
@@ -115,12 +128,8 @@ func printUserDetails(togglApi api.TogglApi) error {
 	return nil
 }
 
-const (
-	layoutDateISO = "2006-01-02"
-)
-
 func getTimeEntriesForDate(togglApi api.TogglApi, dateStr string) ([]api.TimeEntry, error) {
-	startDate, err := time.Parse(layoutDateISO, dateStr)
+	startDate, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing input date: %s", err)
 	}
@@ -158,8 +167,8 @@ func isJiraTicket(entry api.TimeEntry) bool {
 	return strings.HasPrefix(entry.Description, config.GetJiraProjectKey())
 }
 
-func printSummary(entries []api.TimeEntry) {
-	log.Print("== Time Entries Summary ==")
+func printSummary(syncDate string, entries []api.TimeEntry) {
+	log.Printf("== Time Entries Summary (%s) ==", syncDate)
 	for i := range entries {
 		fmt.Printf("Entry: %s || Duration (s): %d\n", entries[i].Description, entries[i].Duration)
 	}
