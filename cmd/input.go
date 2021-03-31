@@ -13,15 +13,15 @@ type inputController interface {
 	requestPassword(string) (string, error)
 }
 
-type stdInController struct{}
+type StdInController struct{}
 
-func (stdInController) requestTextInput(description string) (string, error) {
+func (StdInController) requestTextInput(description string) (string, error) {
 	fmt.Print(description)
 	r := bufio.NewReader(os.Stdin)
 	return r.ReadString('\n')
 }
 
-func (stdInController) requestPassword(description string) (string, error) {
+func (StdInController) requestPassword(description string) (string, error) {
 	fmt.Print(description)
 	bytes, err := terminal.ReadPassword(syscall.Stdin)
 	fmt.Println()

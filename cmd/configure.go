@@ -8,24 +8,21 @@ import (
 	"strings"
 )
 
-func init() {
-	rootCmd.AddCommand(configureCmd)
+func NewConfigureCmd(configManager config.ConfigManager, inputCtrl inputController) *cobra.Command {
+	return &cobra.Command{
+		Use:   "configure",
+		Short: "Create (or update) toggl-sync configuration",
+		Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
+		Run: func(cmd *cobra.Command, args []string) {
+			err := configure(configManager, inputCtrl)
+			if err != nil {
+				log.Fatalf("Error configuring toggl-sync: %s", err)
+			}
+		},
+	}
 }
 
-var configureCmd = &cobra.Command{
-	Use:   "configure",
-	Short: "Create (or update) toggl-sync configuration",
-	Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
-	Run: func(cmd *cobra.Command, args []string) {
-		configManager := &config.ViperConfigManager{}
-		err := configure(stdInController{}, configManager)
-		if err != nil {
-			log.Fatalf("Error configuring toggl-sync: %s", err)
-		}
-	},
-}
-
-func configure(inputCtrl inputController, configManager config.ConfigManager) error {
+func configure(configManager config.ConfigManager, inputCtrl inputController) error {
 	_, err := configManager.Init()
 	if err != nil {
 		return fmt.Errorf("error reading configuration file: %s", err)

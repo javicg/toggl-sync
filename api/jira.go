@@ -20,14 +20,12 @@ type JiraApi interface {
 
 // JiraApiHttpClient is the implementation of JiraApi using an HTTP client.
 type JiraApiHttpClient struct {
-	baseUrl string
-	client  *http.Client
+	client *http.Client
 }
 
 // NewJiraApi creates a new API client for Jira.
 func NewJiraApi() JiraApi {
 	api := &JiraApiHttpClient{}
-	api.baseUrl = config.GetJiraServerUrl() + "/rest/api/latest"
 	api.client = &http.Client{}
 	return api
 }
@@ -80,7 +78,7 @@ func (jira *JiraApiHttpClient) logEntry(ticket string, entry *workLogEntry) erro
 }
 
 func (jira *JiraApiHttpClient) postAuthenticated(path string, body io.Reader) (resp *http.Response, err error) {
-	req, err := http.NewRequest("POST", jira.baseUrl+path, body)
+	req, err := http.NewRequest("POST", config.GetJiraServerUrl()+"/rest/api/latest"+path, body)
 	if err != nil {
 		return
 	}

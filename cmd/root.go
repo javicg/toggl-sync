@@ -10,34 +10,37 @@ import (
 	"time"
 )
 
-var dryRun bool
-var syncCurrentDate bool
-
-var rootCmd = &cobra.Command{
-	Use:   "toggl-sync [date]",
-	Short: "Synchronize time entries to Jira",
-	Long:  "Synchronize time entries to Jira using predefined project keys",
-	Args:  cobra.RangeArgs(0, 1),
-	Run: func(cmd *cobra.Command, args []string) {
-		configManager := &config.ViperConfigManager{}
-		syncDate, err := extractDateToSync(args, syncCurrentDate)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		readConfig(configManager)
-		validateConfig()
-
-		err = sync(stdInController{}, api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		if !dryRun {
-			if err := configManager.Persist(); err != nil {
-				log.Fatalln("Error saving configuration to file: ", err)
+func NewRootCmd(configManager config.ConfigManager, inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi) *cobra.Command {
+	var dryRun bool
+	var syncCurrentDate bool
+	cmd := &cobra.Command{
+		Use:   "toggl-sync [date]",
+		Short: "Synchronize time entries to Jira",
+		Long:  "Synchronize time entries to Jira using predefined project keys",
+		Args:  cobra.RangeArgs(0, 1),
+		Run: func(cmd *cobra.Command, args []string) {
+			syncDate, err := extractDateToSync(args, syncCurrentDate)
+			if err != nil {
+				log.Fatalln(err)
 			}
-		}
-	},
+			readConfig(configManager)
+			validateConfig()
+
+			err = sync(inputCtrl, togglApi, jiraApi, syncDate, dryRun)
+			if err != nil {
+				log.Fatalln(err)
+			}
+
+			if !dryRun {
+				if err := configManager.Persist(); err != nil {
+					log.Fatalln("Error saving configuration to file: ", err)
+				}
+			}
+		},
+	}
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry-run toggl-sync (avoid side effects)")
+	cmd.Flags().BoolVarP(&syncCurrentDate, "current-date", "c", false, "sync the current date (no date argument required)")
+	return cmd
 }
 
 func extractDateToSync(args []string, syncCurrentDate bool) (syncDate string, err error) {
@@ -48,18 +51,6 @@ func extractDateToSync(args []string, syncCurrentDate bool) (syncDate string, er
 		return time.Now().Format("2006-01-02"), nil
 	}
 	return "", fmt.Errorf("invalid arguments. Please, pass down a date (e.g. toggl-sync 2020-12-01) or use the correct flag to sync the current date")
-}
-
-func init() {
-	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry-run toggl-sync (avoid side effects)")
-	rootCmd.Flags().BoolVarP(&syncCurrentDate, "current-date", "c", false, "sync the current date (no date argument required)")
-}
-
-// Execute runs the main command
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatalln(err)
-	}
 }
 
 func readConfig(configManager config.ConfigManager) {

@@ -18,14 +18,12 @@ type TogglApi interface {
 
 // TogglApiHttpClient is the implementation of TogglApi using an HTTP client.
 type TogglApiHttpClient struct {
-	baseUrl string
-	client  *http.Client
+	client *http.Client
 }
 
 // NewTogglApi creates a new API client for Toggl.
 func NewTogglApi() TogglApi {
 	api := &TogglApiHttpClient{}
-	api.baseUrl = config.GetTogglServerUrl()
 	api.client = &http.Client{}
 	return api
 }
@@ -125,7 +123,7 @@ func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
 }
 
 func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", toggl.baseUrl+path, nil)
+	req, err := http.NewRequest("GET", config.GetTogglServerUrl()+path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +141,7 @@ func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, pa
 }
 
 func (toggl *TogglApiHttpClient) getAuthenticated(path string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", toggl.baseUrl+path, nil)
+	req, err := http.NewRequest("GET", config.GetTogglServerUrl()+path, nil)
 	if err != nil {
 		return nil, err
 	}
