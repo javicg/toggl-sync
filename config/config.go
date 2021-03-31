@@ -16,11 +16,18 @@ const jiraPasswordKey = "jira.password"
 const jiraProjectKeyKey = "jira.project.key"
 const jiraOverheadKeyPrefix = "jira.overhead"
 
+type ConfigManager interface {
+	Init() (ok bool, err error)
+	Persist() error
+}
+
+type ViperConfigManager struct{}
+
 // Init initializes the configuration from disk.
 // If the file exists and is readable, Init returns ok=true, err=nil (after loading the configuration)
 // If the file does not exist, Init returns ok=false, err=nil
 // If the file is found, but cannot be read, Init returns ok=false and the error back to the client
-func Init() (ok bool, err error) {
+func (mgr *ViperConfigManager) Init() (ok bool, err error) {
 	viper.SetConfigName("toggl-sync")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("/usr/local/etc")
@@ -135,10 +142,15 @@ func generateOverheadKeyFrom(key string) string {
 	return fmt.Sprintf("%s.%s", jiraOverheadKeyPrefix, key)
 }
 
+// Reset clears all configuration loaded from disk (contents on disk are not removed)
+func Reset() {
+	viper.Reset()
+}
+
 // Persist saves the current config to disk
-func Persist() error {
+func (mgr *ViperConfigManager) Persist() error {
 	// Creating file beforehand as viper.WriteConfig fails otherwise
-	err := createConfigFile()
+	err := mgr.createConfigFile()
 	if err != nil {
 		return err
 	}
@@ -146,12 +158,7 @@ func Persist() error {
 	return viper.WriteConfig()
 }
 
-// Reset clears all configuration loaded from disk (contents on disk are not removed)
-func Reset() {
-	viper.Reset()
-}
-
-func createConfigFile() error {
+func (mgr *ViperConfigManager) createConfigFile() error {
 	f, err := os.OpenFile("/usr/local/etc/toggl-sync.yaml", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return err

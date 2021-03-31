@@ -17,15 +17,16 @@ var configureCmd = &cobra.Command{
 	Short: "Create (or update) toggl-sync configuration",
 	Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := configure(stdInController{})
+		configManager := &config.ViperConfigManager{}
+		err := configure(stdInController{}, configManager)
 		if err != nil {
 			log.Fatalf("Error configuring toggl-sync: %s", err)
 		}
 	},
 }
 
-func configure(inputCtrl inputController) error {
-	_, err := config.Init()
+func configure(inputCtrl inputController, configManager config.ConfigManager) error {
+	_, err := configManager.Init()
 	if err != nil {
 		return fmt.Errorf("error reading configuration file: %s", err)
 	}
@@ -35,7 +36,7 @@ func configure(inputCtrl inputController) error {
 		return fmt.Errorf("error updating configuration: %s", err)
 	}
 
-	if err := config.Persist(); err != nil {
+	if err := configManager.Persist(); err != nil {
 		return fmt.Errorf("error saving configuration to file: %s", err)
 	}
 

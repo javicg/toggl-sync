@@ -19,11 +19,12 @@ var rootCmd = &cobra.Command{
 	Long:  "Synchronize time entries to Jira using predefined project keys",
 	Args:  cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
+		configManager := &config.ViperConfigManager{}
 		syncDate, err := extractDateToSync(args, syncCurrentDate)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		readConfig()
+		readConfig(configManager)
 		validateConfig()
 
 		err = sync(stdInController{}, api.NewTogglApi(), api.NewJiraApi(), syncDate, dryRun)
@@ -32,7 +33,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		if !dryRun {
-			if err := config.Persist(); err != nil {
+			if err := configManager.Persist(); err != nil {
 				log.Fatalln("Error saving configuration to file: ", err)
 			}
 		}
@@ -61,8 +62,8 @@ func Execute() {
 	}
 }
 
-func readConfig() {
-	ok, err := config.Init()
+func readConfig(configManager config.ConfigManager) {
+	ok, err := configManager.Init()
 	if err != nil {
 		log.Fatalf("Unable to read configuration: %s", err)
 	}
