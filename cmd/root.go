@@ -18,24 +18,27 @@ func NewRootCmd(configManager config.ConfigManager, inputCtrl inputController, t
 		Short: "Synchronize time entries to Jira",
 		Long:  "Synchronize time entries to Jira using predefined project keys",
 		Args:  cobra.RangeArgs(0, 1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			syncDate, err := extractDateToSync(args, syncCurrentDate)
 			if err != nil {
-				log.Fatalln(err)
+				return err
 			}
-			readConfig(configManager)
-			validateConfig()
-
-			err = sync(inputCtrl, togglApi, jiraApi, syncDate, dryRun)
-			if err != nil {
-				log.Fatalln(err)
+			if err = readConfig(configManager); err != nil {
+				return err
+			}
+			if err = validateConfig(); err != nil {
+				return err
+			}
+			if err = sync(inputCtrl, togglApi, jiraApi, syncDate, dryRun); err != nil {
+				return err
 			}
 
 			if !dryRun {
 				if err := configManager.Persist(); err != nil {
-					log.Fatalln("Error saving configuration to file: ", err)
+					return err
 				}
 			}
+			return err
 		},
 	}
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry-run toggl-sync (avoid side effects)")
@@ -53,22 +56,24 @@ func extractDateToSync(args []string, syncCurrentDate bool) (syncDate string, er
 	return "", fmt.Errorf("invalid arguments. Please, pass down a date (e.g. toggl-sync 2020-12-01) or use the correct flag to sync the current date")
 }
 
-func readConfig(configManager config.ConfigManager) {
+func readConfig(configManager config.ConfigManager) error {
 	ok, err := configManager.Init()
 	if err != nil {
-		log.Fatalf("Unable to read configuration: %s", err)
+		return fmt.Errorf("unable to read configuration: %s", err)
 	}
 
 	if !ok {
-		log.Fatalln("No configuration file exists! Please, run 'configure' to create a new configuration file")
+		return fmt.Errorf("no configuration file exists! Please, run 'configure' to create a new configuration file")
 	}
 
 	log.Printf("Configuration read from: %s", config.FileUsed())
+	return nil
 }
 
-func validateConfig() {
+func validateConfig() error {
 	isValid :=
-		config.GetTogglUsername() != "" &&
+		config.GetTogglServerUrl() != "" &&
+			config.GetTogglUsername() != "" &&
 			config.GetTogglPassword() != "" &&
 			config.GetJiraServerUrl() != "" &&
 			config.GetJiraUsername() != "" &&
@@ -76,8 +81,9 @@ func validateConfig() {
 			config.GetJiraProjectKey() != ""
 
 	if !isValid {
-		log.Fatalln("Configuration file is invalid! Please, run 'configure' to create a new configuration file")
+		return fmt.Errorf("configuration file is invalid! Please, run 'configure' to create a new configuration file")
 	}
+	return nil
 }
 
 func sync(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, syncDate string, dryRun bool) error {
