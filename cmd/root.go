@@ -11,6 +11,7 @@ import (
 )
 
 var dryRun bool
+var syncCurrentDate bool
 
 var rootCmd = &cobra.Command{
 	Use:   "toggl-sync [date]",
@@ -18,7 +19,7 @@ var rootCmd = &cobra.Command{
 	Long:  "Synchronize time entries to Jira using predefined project keys",
 	Args:  cobra.RangeArgs(0, 1),
 	Run: func(cmd *cobra.Command, args []string) {
-		syncDate, err := extractDateToSync(args)
+		syncDate, err := extractDateToSync(args, syncCurrentDate)
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -38,18 +39,19 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func extractDateToSync(args []string) (syncDate string, err error) {
-	if len(args) == 1 {
+func extractDateToSync(args []string, syncCurrentDate bool) (syncDate string, err error) {
+	if len(args) == 1 && !syncCurrentDate {
 		return args[0], nil
 	}
-	if len(args) == 0 {
+	if len(args) == 0 && syncCurrentDate {
 		return time.Now().Format("2006-01-02"), nil
 	}
-	return "", fmt.Errorf("requires 0 or 1 arg(s) but received %d", len(args))
+	return "", fmt.Errorf("invalid arguments. Please, pass down a date (e.g. toggl-sync 2020-12-01) or use the correct flag to sync the current date")
 }
 
 func init() {
 	rootCmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry-run toggl-sync (avoid side effects)")
+	rootCmd.Flags().BoolVarP(&syncCurrentDate, "current-date", "c", false, "sync the current date (no date argument required)")
 }
 
 // Execute runs the main command
