@@ -26,7 +26,7 @@ func TestTogglApi_GetMe(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	me, err := togglApi.GetMe()
@@ -43,7 +43,7 @@ func TestTogglApi_GetMe_ErrorWhenRequestFails(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetMe()
@@ -60,7 +60,7 @@ func TestTogglApi_GetMe_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetMe()
@@ -68,7 +68,7 @@ func TestTogglApi_GetMe_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
 }
 
 func TestTogglApi_GetMe_ErrorWhenRequestErrors(t *testing.T) {
-	config.SetTogglServerUrl("%#2")
+	config.Set(config.TogglServerUrl, "%#2")
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetMe()
@@ -98,7 +98,7 @@ func TestTogglApi_GetTimeEntries(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
@@ -117,7 +117,7 @@ func TestTogglApi_GetTimeEntries_ErrorWhenRequestFails(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
@@ -136,7 +136,7 @@ func TestTogglApi_GetTimeEntries_ErrorWhenResponseHasUnexpectedFormat(t *testing
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
@@ -146,7 +146,7 @@ func TestTogglApi_GetTimeEntries_ErrorWhenResponseHasUnexpectedFormat(t *testing
 }
 
 func TestTogglApi_GetTimeEntries_ErrorWhenRequestErrors(t *testing.T) {
-	config.SetTogglServerUrl("%#2")
+	config.Set(config.TogglServerUrl, "%#2")
 
 	togglApi := NewTogglApi()
 	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
@@ -173,7 +173,7 @@ func TestTogglApi_GetProjectById(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	project, err := togglApi.GetProjectById(projectId)
@@ -192,7 +192,7 @@ func TestTogglApi_GetProjectById_ErrorWhenRequestFails(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetProjectById(projectId)
@@ -211,7 +211,7 @@ func TestTogglApi_GetProjectById_ErrorWhenResponseHasUnexpectedFormat(t *testing
 		Create()
 	defer server.Close()
 
-	config.SetTogglServerUrl(server.URL)
+	config.Set(config.TogglServerUrl, server.URL)
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetProjectById(projectId)
@@ -219,7 +219,7 @@ func TestTogglApi_GetProjectById_ErrorWhenResponseHasUnexpectedFormat(t *testing
 }
 
 func TestTogglApi_GetProjectById_ErrorWhenRequestErrors(t *testing.T) {
-	config.SetTogglServerUrl("%#2")
+	config.Set(config.TogglServerUrl, "%#2")
 
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetProjectById(10)

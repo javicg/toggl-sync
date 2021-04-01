@@ -637,11 +637,11 @@ func (mock RejectAllCallsJiraApi) LogWorkWithUserDescription(string, time.Durati
 func setupBasicConfig() {
 	config.Reset()
 	viper.SetConfigFile("test-config.yml")
-	config.SetTogglServerUrl("http://localhost/toggl")
-	config.SetTogglUsername("TogglUser")
-	config.SetTogglPassword("TogglPassword")
-	config.SetJiraServerUrl("http://localhost/jira")
-	config.SetJiraUsername("JiraUser")
-	config.SetJiraPassword("JiraPassword")
-	config.SetJiraProjectKey("ENG")
+	config.Set(config.TogglServerUrl, "http://localhost/toggl")
+	config.Set(config.TogglUsername, "TogglUser")
+	config.Set(config.TogglPassword, "TogglPassword")
+	config.Set(config.JiraServerUrl, "http://localhost/jira")
+	config.Set(config.JiraUsername, "JiraUser")
+	config.Set(config.JiraPassword, "JiraPassword")
+	config.Set(config.JiraProjectKey, "ENG")
 }

@@ -78,12 +78,12 @@ func (jira *JiraApiHttpClient) logEntry(ticket string, entry *workLogEntry) erro
 }
 
 func (jira *JiraApiHttpClient) postAuthenticated(path string, body io.Reader) (resp *http.Response, err error) {
-	req, err := http.NewRequest("POST", config.GetJiraServerUrl()+"/rest/api/latest"+path, body)
+	req, err := http.NewRequest("POST", config.Get(config.JiraServerUrl)+"/rest/api/latest"+path, body)
 	if err != nil {
 		return
 	}
 
-	req.SetBasicAuth(config.GetJiraUsername(), config.GetJiraPassword())
+	req.SetBasicAuth(config.Get(config.JiraUsername), config.Get(config.JiraPassword))
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")

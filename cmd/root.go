@@ -73,13 +73,13 @@ func readConfig(configManager config.Manager) error {
 
 func validateConfig() error {
 	isValid :=
-		config.GetTogglServerUrl() != "" &&
-			config.GetTogglUsername() != "" &&
-			config.GetTogglPassword() != "" &&
-			config.GetJiraServerUrl() != "" &&
-			config.GetJiraUsername() != "" &&
-			config.GetJiraPassword() != "" &&
-			config.GetJiraProjectKey() != ""
+		config.Get(config.TogglServerUrl) != "" &&
+			config.Get(config.TogglUsername) != "" &&
+			config.Get(config.TogglPassword) != "" &&
+			config.Get(config.JiraServerUrl) != "" &&
+			config.Get(config.JiraUsername) != "" &&
+			config.Get(config.JiraPassword) != "" &&
+			config.Get(config.JiraProjectKey) != ""
 
 	if !isValid {
 		return fmt.Errorf("configuration file is invalid! Please, run 'configure' to create a new configuration file")
@@ -165,7 +165,7 @@ func validateEntry(entry api.TimeEntry) (ok bool, message string) {
 }
 
 func isJiraTicket(entry api.TimeEntry) bool {
-	return strings.HasPrefix(entry.Description, config.GetJiraProjectKey())
+	return strings.HasPrefix(entry.Description, config.Get(config.JiraProjectKey))
 }
 
 func printSummary(syncDate string, entries []api.TimeEntry) {

@@ -26,7 +26,7 @@ func TestJiraApi_LogWork(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetJiraServerUrl(server.URL)
+	config.Set(config.JiraServerUrl, server.URL)
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWork(ticket, time.Duration(60)*time.Second)
@@ -44,7 +44,7 @@ func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetJiraServerUrl(server.URL)
+	config.Set(config.JiraServerUrl, server.URL)
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWork(ticket, time.Duration(60)*time.Second)
@@ -52,7 +52,7 @@ func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
 }
 
 func TestJiraApi_LogWork_ErrorWhenRequestErrors(t *testing.T) {
-	config.SetJiraServerUrl("%#2")
+	config.Set(config.JiraServerUrl, "%#2")
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWork("EXAMPLE-1234", time.Duration(60)*time.Second)
@@ -75,7 +75,7 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.SetJiraServerUrl(server.URL)
+	config.Set(config.JiraServerUrl, server.URL)
 
 	jiraApi := NewJiraApi()
 	err := jiraApi.LogWorkWithUserDescription(ticket, time.Duration(60)*time.Second, "Writing toggl-sync tests")

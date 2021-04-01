@@ -123,12 +123,12 @@ func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
 }
 
 func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", config.GetTogglServerUrl()+path, nil)
+	req, err := http.NewRequest("GET", config.Get(config.TogglServerUrl)+path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.SetBasicAuth(config.GetTogglUsername(), config.GetTogglPassword())
+	req.SetBasicAuth(config.Get(config.TogglUsername), config.Get(config.TogglPassword))
 
 	q := req.URL.Query()
 	for p := range params {
@@ -141,12 +141,12 @@ func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, pa
 }
 
 func (toggl *TogglApiHttpClient) getAuthenticated(path string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", config.GetTogglServerUrl()+path, nil)
+	req, err := http.NewRequest("GET", config.Get(config.TogglServerUrl)+path, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.SetBasicAuth(config.GetTogglUsername(), config.GetTogglPassword())
+	req.SetBasicAuth(config.Get(config.TogglUsername), config.Get(config.TogglPassword))
 
 	req.Header.Add("Accept", "application/json")
 	return toggl.client.Do(req)

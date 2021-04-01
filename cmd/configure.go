@@ -39,50 +39,53 @@ func configure(configManager config.Manager, inputCtrl inputController) error {
 }
 
 func updateConfiguration(inputCtrl inputController) (err error) {
-	config.SetTogglServerUrl("https://www.toggl.com/api/v8")
-	err = saveSettingAs(inputCtrl, "Toggl username", config.GetTogglUsername, config.SetTogglUsername, false)
+	config.Set(config.TogglServerUrl, "https://www.toggl.com/api/v8")
+	err = saveSettingAs(inputCtrl, "Toggl username", config.TogglUsername, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Toggl password", config.GetTogglPassword, config.SetTogglPassword, true)
+	err = saveSettingAs(inputCtrl, "Toggl password", config.TogglPassword, true)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira server url", config.GetJiraServerUrl, config.SetJiraServerUrl, false)
+	err = saveSettingAs(inputCtrl, "Jira server url", config.JiraServerUrl, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira username", config.GetJiraUsername, config.SetJiraUsername, false)
+	err = saveSettingAs(inputCtrl, "Jira username", config.JiraUsername, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira password", config.GetJiraPassword, config.SetJiraPassword, true)
+	err = saveSettingAs(inputCtrl, "Jira password", config.JiraPassword, true)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira project key", config.GetJiraProjectKey, config.SetJiraProjectKey, false)
+	err = saveSettingAs(inputCtrl, "Jira project key", config.JiraProjectKey, false)
 	if err != nil {
 		return
 	}
 	for _, key := range config.GetAllOverheadKeys() {
-		getOverheadFn := func() string {
-			return config.GetOverheadKey(key)
-		}
-		saveOverheadFn := func(value string) {
-			config.SetOverheadKey(key, value)
-		}
-		if err = saveSettingAs(inputCtrl, fmt.Sprintf("Overhead - %s", key), getOverheadFn, saveOverheadFn, false); err != nil {
+		if err = saveOverheadSettingAs(inputCtrl, fmt.Sprintf("Overhead - %s", key), key); err != nil {
 			return
 		}
 	}
 	return
 }
 
-func saveSettingAs(inputCtrl inputController, inputName string, getFn func() string, saveFn func(string), isPassword bool) error {
-	existingValue := getFn()
+func saveSettingAs(inputCtrl inputController, inputName string, key string, isPassword bool) error {
+	existingValue := config.Get(key)
 	input, err := requestInput(inputCtrl, inputName, existingValue, isPassword)
 	if err == nil && input != "" {
-		saveFn(input)
+		config.Set(key, input)
+	}
+	return err
+}
+
+func saveOverheadSettingAs(inputCtrl inputController, inputName string, key string) error {
+	existingValue := config.GetOverheadKey(key)
+	input, err := requestTextInput(inputCtrl, inputName, existingValue)
+	if err == nil && input != "" {
+		config.SetOverheadKey(key, input)
 	}
 	return err
 }
