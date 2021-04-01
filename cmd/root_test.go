@@ -465,7 +465,7 @@ func TestRootCmd_LoggingOverheadWork_RequestOverheadKey(t *testing.T) {
 		},
 	}
 	jiraApi := &MockJiraApi{}
-	inputCtrl := MockInputController{
+	inputCtrl := &MockInputController{
 		TextInput: "ENG-1001",
 	}
 
@@ -505,7 +505,7 @@ func TestRootCmd_LoggingOverheadWork_RequestOverheadKey_ErrorPersistingConfig(t 
 		},
 	}
 	jiraApi := &MockJiraApi{}
-	inputCtrl := MockInputController{
+	inputCtrl := &MockInputController{
 		TextInput: "ENG-1001",
 	}
 
@@ -544,7 +544,7 @@ func TestRootCmd_LoggingOverheadWork_ErrorRequestingOverheadKey_ShouldNotStopSyn
 		},
 	}
 	jiraApi := &MockJiraApi{}
-	inputCtrl := MockInputController{
+	inputCtrl := &MockInputController{
 		TextInputError: errors.New("stub error"),
 	}
 
