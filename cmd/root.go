@@ -10,7 +10,8 @@ import (
 	"time"
 )
 
-func NewRootCmd(configManager config.ConfigManager, inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi) *cobra.Command {
+// NewRootCmd creates a new Cobra Command that acts as entry point for all operations
+func NewRootCmd(configManager config.Manager, inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi) *cobra.Command {
 	var dryRun bool
 	var syncCurrentDate bool
 	cmd := &cobra.Command{
@@ -56,7 +57,7 @@ func extractDateToSync(args []string, syncCurrentDate bool) (syncDate string, er
 	return "", fmt.Errorf("invalid arguments. Please, pass down a date (e.g. toggl-sync 2020-12-01) or use the correct flag to sync the current date")
 }
 
-func readConfig(configManager config.ConfigManager) error {
+func readConfig(configManager config.Manager) error {
 	ok, err := configManager.Init()
 	if err != nil {
 		return fmt.Errorf("unable to read configuration: %s", err)

@@ -7,7 +7,8 @@ import (
 	"strings"
 )
 
-func NewConfigureCmd(configManager config.ConfigManager, inputCtrl inputController) *cobra.Command {
+// NewConfigureCmd creates a new Cobra Command that helps configuring the application
+func NewConfigureCmd(configManager config.Manager, inputCtrl inputController) *cobra.Command {
 	return &cobra.Command{
 		Use:   "configure",
 		Short: "Create (or update) toggl-sync configuration",
@@ -19,7 +20,7 @@ func NewConfigureCmd(configManager config.ConfigManager, inputCtrl inputControll
 	}
 }
 
-func configure(configManager config.ConfigManager, inputCtrl inputController) error {
+func configure(configManager config.Manager, inputCtrl inputController) error {
 	_, err := configManager.Init()
 	if err != nil {
 		return fmt.Errorf("error reading configuration file: %s", err)

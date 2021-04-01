@@ -3,7 +3,7 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 	"os"
 	"syscall"
 )
@@ -13,6 +13,7 @@ type inputController interface {
 	requestPassword(string) (string, error)
 }
 
+// StdInController is an input controller that redirects all calls to Stdin
 type StdInController struct{}
 
 func (StdInController) requestTextInput(description string) (string, error) {
@@ -23,7 +24,7 @@ func (StdInController) requestTextInput(description string) (string, error) {
 
 func (StdInController) requestPassword(description string) (string, error) {
 	fmt.Print(description)
-	bytes, err := terminal.ReadPassword(syscall.Stdin)
+	bytes, err := term.ReadPassword(syscall.Stdin)
 	fmt.Println()
 	return string(bytes), err
 }

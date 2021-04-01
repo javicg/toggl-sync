@@ -16,11 +16,13 @@ const jiraPasswordKey = "jira.password"
 const jiraProjectKeyKey = "jira.project.key"
 const jiraOverheadKeyPrefix = "jira.overhead"
 
-type ConfigManager interface {
+// Manager isolates side effects from reading and persisting config values
+type Manager interface {
 	Init() (ok bool, err error)
 	Persist() error
 }
 
+// ViperConfigManager is an implementation of Manager that relies on "github.com/spf13/viper" for configuration management
 type ViperConfigManager struct{}
 
 // Init initializes the configuration from disk.
