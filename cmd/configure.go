@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
-	"log"
 	"strings"
 )
 
@@ -13,11 +12,9 @@ func NewConfigureCmd(configManager config.ConfigManager, inputCtrl inputControll
 		Use:   "configure",
 		Short: "Create (or update) toggl-sync configuration",
 		Long:  "Create (or update) the necessary configuration entries so all other toggl-sync commands work without issues",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			err := configure(configManager, inputCtrl)
-			if err != nil {
-				log.Fatalf("Error configuring toggl-sync: %s", err)
-			}
+			return err
 		},
 	}
 }
