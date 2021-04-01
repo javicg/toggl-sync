@@ -39,7 +39,7 @@ func configure(configManager config.Manager, inputCtrl inputController) error {
 }
 
 func updateConfiguration(inputCtrl inputController) (err error) {
-	config.Set(config.TogglServerUrl, "https://www.toggl.com/api/v8")
+	config.Set(config.TogglServerURL, "https://www.toggl.com/api/v8")
 	err = saveSettingAs(inputCtrl, "Toggl username", config.TogglUsername, false)
 	if err != nil {
 		return
@@ -48,7 +48,7 @@ func updateConfiguration(inputCtrl inputController) (err error) {
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira server url", config.JiraServerUrl, false)
+	err = saveSettingAs(inputCtrl, "Jira server url", config.JiraServerURL, false)
 	if err != nil {
 		return
 	}

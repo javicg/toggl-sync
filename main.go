@@ -11,7 +11,7 @@ func main() {
 	configManager := &config.ViperConfigManager{}
 	inputCtrl := cmd.StdInController{}
 
-	rootCmd := cmd.NewRootCmd(configManager, inputCtrl, api.NewTogglApi(), api.NewJiraApi())
+	rootCmd := cmd.NewRootCmd(configManager, inputCtrl, api.NewTogglAPI(), api.NewJiraAPI())
 	rootCmd.AddCommand(cmd.NewConfigureCmd(configManager, inputCtrl))
 	rootCmd.AddCommand(cmd.NewVersionCmd())
 

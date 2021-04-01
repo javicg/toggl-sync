@@ -9,21 +9,21 @@ import (
 	"time"
 )
 
-// TogglApi is the Toggl API client contract listing all supported calls.
-type TogglApi interface {
+// TogglAPI is the Toggl API client contract listing all supported calls.
+type TogglAPI interface {
 	GetMe() (*Me, error)
 	GetTimeEntries(startDate time.Time, endDate time.Time) ([]TimeEntry, error)
 	GetProjectById(id int) (*Project, error)
 }
 
-// TogglApiHttpClient is the implementation of TogglApi using an HTTP client.
-type TogglApiHttpClient struct {
+// TogglAPIHTTPClient is the implementation of TogglAPI using an HTTP client.
+type TogglAPIHTTPClient struct {
 	client *http.Client
 }
 
-// NewTogglApi creates a new API client for Toggl.
-func NewTogglApi() TogglApi {
-	api := &TogglApiHttpClient{}
+// NewTogglAPI creates a new API client for Toggl.
+func NewTogglAPI() TogglAPI {
+	api := &TogglAPIHTTPClient{}
 	api.client = &http.Client{}
 	return api
 }
@@ -40,7 +40,7 @@ type PersonalInfo struct {
 }
 
 // GetMe retrieves the user profile, using the Toggl credentials stored in the configuration file.
-func (toggl *TogglApiHttpClient) GetMe() (*Me, error) {
+func (toggl *TogglAPIHTTPClient) GetMe() (*Me, error) {
 	resp, err := toggl.getAuthenticated("/me")
 	if err != nil {
 		return nil, fmt.Errorf("[GetMe] Request failed! Error: %s", err)
@@ -70,7 +70,7 @@ type TimeEntry struct {
 
 // GetTimeEntries retrieves all time entries within a given time period, represented by start and end.
 // It uses the Toggl credentials stored in the configuration file.
-func (toggl *TogglApiHttpClient) GetTimeEntries(start time.Time, end time.Time) ([]TimeEntry, error) {
+func (toggl *TogglAPIHTTPClient) GetTimeEntries(start time.Time, end time.Time) ([]TimeEntry, error) {
 	params := map[string]string{
 		"start_date": start.Format(time.RFC3339),
 		"end_date":   end.Format(time.RFC3339),
@@ -105,7 +105,7 @@ type ProjectData struct {
 
 // GetProjectById retrieves the project data using the specified id.
 // It uses the Toggl credentials stored in the configuration file.
-func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
+func (toggl *TogglAPIHTTPClient) GetProjectById(pid int) (*Project, error) {
 	resp, err := toggl.getAuthenticated("/projects/" + strconv.Itoa(pid))
 	if err != nil {
 		return nil, fmt.Errorf("[GetProjectById] Request failed! Error: %s", err)
@@ -122,8 +122,8 @@ func (toggl *TogglApiHttpClient) GetProjectById(pid int) (*Project, error) {
 	return &data, resp.Body.Close()
 }
 
-func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", config.Get(config.TogglServerUrl)+path, nil)
+func (toggl *TogglAPIHTTPClient) getAuthenticatedWithQueryParams(path string, params map[string]string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", config.Get(config.TogglServerURL)+path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +140,8 @@ func (toggl *TogglApiHttpClient) getAuthenticatedWithQueryParams(path string, pa
 	return toggl.client.Do(req)
 }
 
-func (toggl *TogglApiHttpClient) getAuthenticated(path string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", config.Get(config.TogglServerUrl)+path, nil)
+func (toggl *TogglAPIHTTPClient) getAuthenticated(path string) (*http.Response, error) {
+	req, err := http.NewRequest("GET", config.Get(config.TogglServerURL)+path, nil)
 	if err != nil {
 		return nil, err
 	}

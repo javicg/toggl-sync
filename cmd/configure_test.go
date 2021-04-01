@@ -29,10 +29,10 @@ func TestConfigureCmd(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "value", config.Get(config.TogglUsername))
 	assert.Equal(t, "secret", config.Get(config.TogglPassword))
-	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerUrl))
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerURL))
 	assert.Equal(t, "value", config.Get(config.JiraUsername))
 	assert.Equal(t, "secret", config.Get(config.JiraPassword))
-	assert.Equal(t, "value", config.Get(config.JiraServerUrl))
+	assert.Equal(t, "value", config.Get(config.JiraServerURL))
 	assert.Equal(t, "value", config.Get(config.JiraProjectKey))
 }
 
@@ -46,10 +46,10 @@ func TestConfigureCmd_TrimInputValues(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "value", config.Get(config.TogglUsername))
 	assert.Equal(t, "secret", config.Get(config.TogglPassword))
-	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerUrl))
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerURL))
 	assert.Equal(t, "value", config.Get(config.JiraUsername))
 	assert.Equal(t, "secret", config.Get(config.JiraPassword))
-	assert.Equal(t, "value", config.Get(config.JiraServerUrl))
+	assert.Equal(t, "value", config.Get(config.JiraServerURL))
 	assert.Equal(t, "value", config.Get(config.JiraProjectKey))
 }
 
@@ -70,10 +70,10 @@ func TestConfigureCmd_OverrideExistingValues(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "updatedValue", config.Get(config.TogglUsername))
 	assert.Equal(t, "updatedSecret", config.Get(config.TogglPassword))
-	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerUrl))
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerURL))
 	assert.Equal(t, "updatedValue", config.Get(config.JiraUsername))
 	assert.Equal(t, "updatedSecret", config.Get(config.JiraPassword))
-	assert.Equal(t, "updatedValue", config.Get(config.JiraServerUrl))
+	assert.Equal(t, "updatedValue", config.Get(config.JiraServerURL))
 	assert.Equal(t, "updatedValue", config.Get(config.JiraProjectKey))
 }
 
@@ -94,10 +94,10 @@ func TestConfigureCmd_PreserveExistingValuesOnEmptyInput(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "updatedValue", config.Get(config.TogglUsername))
 	assert.Equal(t, "secret", config.Get(config.TogglPassword))
-	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerUrl))
+	assert.Equal(t, "https://www.toggl.com/api/v8", config.Get(config.TogglServerURL))
 	assert.Equal(t, "updatedValue", config.Get(config.JiraUsername))
 	assert.Equal(t, "secret", config.Get(config.JiraPassword))
-	assert.Equal(t, "updatedValue", config.Get(config.JiraServerUrl))
+	assert.Equal(t, "updatedValue", config.Get(config.JiraServerURL))
 	assert.Equal(t, "updatedValue", config.Get(config.JiraProjectKey))
 }
 

@@ -11,20 +11,23 @@ func FileUsed() string {
 	return viper.ConfigFileUsed()
 }
 
+// Available configuration keys
 const (
 	TogglUsername  string = "toggl.username"
 	TogglPassword  string = "toggl.password"
-	TogglServerUrl string = "toggl.server.url"
-	JiraServerUrl  string = "jira.server.url"
+	TogglServerURL string = "toggl.server.url"
+	JiraServerURL  string = "jira.server.url"
 	JiraUsername   string = "jira.username"
 	JiraPassword   string = "jira.password"
 	JiraProjectKey string = "jira.project.key"
 )
 
+// Get returns the current value of the key in the config map (if any exists)
 func Get(key string) string {
 	return viper.GetString(key)
 }
 
+// Set overrides the value of the key in the config map
 func Set(key string, value string) {
 	viper.Set(key, value)
 }

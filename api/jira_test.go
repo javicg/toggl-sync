@@ -17,8 +17,8 @@ func TestJiraApi_LogWork(t *testing.T) {
 		TimeSpentSeconds: 60,
 	}
 
-	server := NewHttpServer().
-		StubApi(&Stubbing{
+	server := NewHTTPServer().
+		StubAPI(&Stubbing{
 			Endpoint:         "/issue/" + ticket + "/worklog",
 			RequestValidator: validateBodyMatches(t, expectedEntry),
 			ResponseCode:     http.StatusCreated,
@@ -26,36 +26,36 @@ func TestJiraApi_LogWork(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.Set(config.JiraServerUrl, server.URL)
+	config.Set(config.JiraServerURL, server.URL)
 
-	jiraApi := NewJiraApi()
-	err := jiraApi.LogWork(ticket, time.Duration(60)*time.Second)
+	jiraAPI := NewJiraAPI()
+	err := jiraAPI.LogWork(ticket, time.Duration(60)*time.Second)
 	assert.Nil(t, err)
 }
 
 func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
 	ticket := "EXAMPLE-1234"
 
-	server := NewHttpServer().
-		StubApi(&Stubbing{
+	server := NewHTTPServer().
+		StubAPI(&Stubbing{
 			Endpoint:     "/issue/" + ticket + "/worklog",
 			ResponseCode: http.StatusBadGateway,
 		}).
 		Create()
 	defer server.Close()
 
-	config.Set(config.JiraServerUrl, server.URL)
+	config.Set(config.JiraServerURL, server.URL)
 
-	jiraApi := NewJiraApi()
-	err := jiraApi.LogWork(ticket, time.Duration(60)*time.Second)
+	jiraAPI := NewJiraAPI()
+	err := jiraAPI.LogWork(ticket, time.Duration(60)*time.Second)
 	assert.NotNilf(t, err, "API errors should be returned to the client")
 }
 
 func TestJiraApi_LogWork_ErrorWhenRequestErrors(t *testing.T) {
-	config.Set(config.JiraServerUrl, "%#2")
+	config.Set(config.JiraServerURL, "%#2")
 
-	jiraApi := NewJiraApi()
-	err := jiraApi.LogWork("EXAMPLE-1234", time.Duration(60)*time.Second)
+	jiraAPI := NewJiraAPI()
+	err := jiraAPI.LogWork("EXAMPLE-1234", time.Duration(60)*time.Second)
 	assert.NotNil(t, err, "Request errors (e.g. misconfiguration) should be returned to the client")
 }
 
@@ -66,8 +66,8 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 		TimeSpentSeconds: 60,
 	}
 
-	server := NewHttpServer().
-		StubApi(&Stubbing{
+	server := NewHTTPServer().
+		StubAPI(&Stubbing{
 			Endpoint:         "/issue/" + ticket + "/worklog",
 			RequestValidator: validateBodyMatches(t, expectedEntry),
 			ResponseCode:     http.StatusCreated,
@@ -75,10 +75,10 @@ func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 		Create()
 	defer server.Close()
 
-	config.Set(config.JiraServerUrl, server.URL)
+	config.Set(config.JiraServerURL, server.URL)
 
-	jiraApi := NewJiraApi()
-	err := jiraApi.LogWorkWithUserDescription(ticket, time.Duration(60)*time.Second, "Writing toggl-sync tests")
+	jiraAPI := NewJiraAPI()
+	err := jiraAPI.LogWorkWithUserDescription(ticket, time.Duration(60)*time.Second, "Writing toggl-sync tests")
 	assert.Nil(t, err)
 }
 

@@ -9,26 +9,26 @@ import (
 	"strings"
 )
 
-type MockHttpResponse struct {
+type MockHTTPResponse struct {
 	response   string
 	statusCode int
 }
 
-type MockHttpServer struct {
+type MockHTTPServer struct {
 	validators map[string]func(*http.Request)
-	responses  map[string]*MockHttpResponse
+	responses  map[string]*MockHTTPResponse
 }
 
-func NewHttpServer() *MockHttpServer {
-	return &MockHttpServer{
-		responses:  make(map[string]*MockHttpResponse),
+func NewHTTPServer() *MockHTTPServer {
+	return &MockHTTPServer{
+		responses:  make(map[string]*MockHTTPResponse),
 		validators: make(map[string]func(*http.Request)),
 	}
 }
 
-func (server *MockHttpServer) StubApi(stubbing *Stubbing) *MockHttpServer {
+func (server *MockHTTPServer) StubAPI(stubbing *Stubbing) *MockHTTPServer {
 	if stubbing.Endpoint != "" {
-		server.responses[stubbing.Endpoint] = &MockHttpResponse{
+		server.responses[stubbing.Endpoint] = &MockHTTPResponse{
 			response:   stubbing.ResponseBody,
 			statusCode: stubbing.ResponseCode,
 		}
@@ -46,7 +46,7 @@ type Stubbing struct {
 	ResponseBody     string
 }
 
-func (server *MockHttpServer) Create() *httptest.Server {
+func (server *MockHTTPServer) Create() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Handling request: %s %s", r.Method, r.URL.String())
 		for endpoint, stub := range server.responses {
@@ -62,13 +62,13 @@ func (server *MockHttpServer) Create() *httptest.Server {
 	}))
 }
 
-func (server *MockHttpServer) validateRequestIfNeeded(endpoint string, r *http.Request) {
+func (server *MockHTTPServer) validateRequestIfNeeded(endpoint string, r *http.Request) {
 	if server.validators[endpoint] != nil {
 		server.validators[endpoint](r)
 	}
 }
 
-func (server *MockHttpServer) handleMatchingStub(endpoint string, w http.ResponseWriter) {
+func (server *MockHTTPServer) handleMatchingStub(endpoint string, w http.ResponseWriter) {
 	stub := server.responses[endpoint]
 	if stub.response != "" {
 		_, err := fmt.Fprintln(w, stub.response)
@@ -81,7 +81,7 @@ func (server *MockHttpServer) handleMatchingStub(endpoint string, w http.Respons
 	}
 }
 
-func AsJsonString(something interface{}) string {
+func AsJSONString(something interface{}) string {
 	bytes, _ := json.Marshal(something)
 	return string(bytes)
 }

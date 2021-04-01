@@ -11,7 +11,7 @@ import (
 )
 
 // NewRootCmd creates a new Cobra Command that acts as entry point for all operations
-func NewRootCmd(configManager config.Manager, inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi) *cobra.Command {
+func NewRootCmd(configManager config.Manager, inputCtrl inputController, togglAPI api.TogglAPI, jiraAPI api.JiraAPI) *cobra.Command {
 	var dryRun bool
 	var syncCurrentDate bool
 	cmd := &cobra.Command{
@@ -30,7 +30,7 @@ func NewRootCmd(configManager config.Manager, inputCtrl inputController, togglAp
 			if err = validateConfig(); err != nil {
 				return err
 			}
-			if err = sync(inputCtrl, togglApi, jiraApi, syncDate, dryRun); err != nil {
+			if err = sync(inputCtrl, togglAPI, jiraAPI, syncDate, dryRun); err != nil {
 				return err
 			}
 
@@ -73,10 +73,10 @@ func readConfig(configManager config.Manager) error {
 
 func validateConfig() error {
 	isValid :=
-		config.Get(config.TogglServerUrl) != "" &&
+		config.Get(config.TogglServerURL) != "" &&
 			config.Get(config.TogglUsername) != "" &&
 			config.Get(config.TogglPassword) != "" &&
-			config.Get(config.JiraServerUrl) != "" &&
+			config.Get(config.JiraServerURL) != "" &&
 			config.Get(config.JiraUsername) != "" &&
 			config.Get(config.JiraPassword) != "" &&
 			config.Get(config.JiraProjectKey) != ""
@@ -87,13 +87,13 @@ func validateConfig() error {
 	return nil
 }
 
-func sync(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, syncDate string, dryRun bool) error {
-	err := printUserDetails(togglApi)
+func sync(inputCtrl inputController, togglAPI api.TogglAPI, jiraAPI api.JiraAPI, syncDate string, dryRun bool) error {
+	err := printUserDetails(togglAPI)
 	if err != nil {
 		return err
 	}
 
-	entries, err := getTimeEntriesForDate(togglApi, syncDate)
+	entries, err := getTimeEntriesForDate(togglAPI, syncDate)
 	if err != nil {
 		return err
 	}
@@ -113,13 +113,13 @@ func sync(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi,
 		return nil
 	}
 
-	logWorkOnJira(inputCtrl, togglApi, jiraApi, entries)
+	logWorkOnJira(inputCtrl, togglAPI, jiraAPI, entries)
 	return nil
 }
 
-func printUserDetails(togglApi api.TogglApi) error {
+func printUserDetails(togglAPI api.TogglAPI) error {
 	log.Print("Fetching user details...")
-	me, err := togglApi.GetMe()
+	me, err := togglAPI.GetMe()
 	if err != nil {
 		return fmt.Errorf("error fetching user details: %s", err)
 	}
@@ -129,13 +129,13 @@ func printUserDetails(togglApi api.TogglApi) error {
 	return nil
 }
 
-func getTimeEntriesForDate(togglApi api.TogglApi, dateStr string) ([]api.TimeEntry, error) {
+func getTimeEntriesForDate(togglAPI api.TogglAPI, dateStr string) ([]api.TimeEntry, error) {
 	startDate, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing input date: %s", err)
 	}
 
-	entries, err := togglApi.GetTimeEntries(startDate, startDate.AddDate(0, 0, 1))
+	entries, err := togglAPI.GetTimeEntries(startDate, startDate.AddDate(0, 0, 1))
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving time entries: %s", err)
 	}
@@ -175,19 +175,19 @@ func printSummary(syncDate string, entries []api.TimeEntry) {
 	}
 }
 
-func logWorkOnJira(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, entries []api.TimeEntry) {
+func logWorkOnJira(inputCtrl inputController, togglAPI api.TogglAPI, jiraAPI api.JiraAPI, entries []api.TimeEntry) {
 	log.Print("Logging work on Jira...")
 	for _, entry := range entries {
 		if isJiraTicket(entry) {
-			logProjectWorkOnJira(jiraApi, entry)
+			logProjectWorkOnJira(jiraAPI, entry)
 		} else {
-			logOverheadWorkOnJira(inputCtrl, togglApi, jiraApi, entry)
+			logOverheadWorkOnJira(inputCtrl, togglAPI, jiraAPI, entry)
 		}
 	}
 }
 
-func logProjectWorkOnJira(jiraApi api.JiraApi, entry api.TimeEntry) {
-	err := jiraApi.LogWork(entry.Description, time.Duration(entry.Duration)*time.Second)
+func logProjectWorkOnJira(jiraAPI api.JiraAPI, entry api.TimeEntry) {
+	err := jiraAPI.LogWork(entry.Description, time.Duration(entry.Duration)*time.Second)
 	if err != nil {
 		log.Printf("No time logged for [%s]; operation failed with an error: %s", entry.Description, err)
 	} else {
@@ -195,8 +195,8 @@ func logProjectWorkOnJira(jiraApi api.JiraApi, entry api.TimeEntry) {
 	}
 }
 
-func logOverheadWorkOnJira(inputCtrl inputController, togglApi api.TogglApi, jiraApi api.JiraApi, entry api.TimeEntry) {
-	project, err := togglApi.GetProjectById(entry.Pid)
+func logOverheadWorkOnJira(inputCtrl inputController, togglAPI api.TogglAPI, jiraAPI api.JiraAPI, entry api.TimeEntry) {
+	project, err := togglAPI.GetProjectById(entry.Pid)
 	if err != nil {
 		log.Printf("No time logged for [%s]; retrieving project information failed with an error: %s", entry.Description, err)
 		return
@@ -211,7 +211,7 @@ func logOverheadWorkOnJira(inputCtrl inputController, togglApi api.TogglApi, jir
 	}
 
 	key := config.GetOverheadKey(project.Data.Name)
-	err = jiraApi.LogWorkWithUserDescription(key, time.Duration(entry.Duration)*time.Second, entry.Description)
+	err = jiraAPI.LogWorkWithUserDescription(key, time.Duration(entry.Duration)*time.Second, entry.Description)
 	if err != nil {
 		log.Printf("No time logged for [%s] (project [%s]); operation failed with an error: %s", entry.Description, project.Data.Name, err)
 	} else {

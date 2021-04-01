@@ -13,7 +13,7 @@ import (
 func TestRootCmd_MissingDate(t *testing.T) {
 	setupBasicConfig()
 
-	cmd := NewRootCmd(&MockConfigManager{}, RejectAllInputController{t: t}, &MockTogglApi{}, &MockJiraApi{})
+	cmd := NewRootCmd(&MockConfigManager{}, RejectAllInputController{t: t}, &MockTogglAPI{}, &MockJiraAPI{})
 	cmd.SetArgs([]string{})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -22,7 +22,7 @@ func TestRootCmd_MissingDate(t *testing.T) {
 func TestRootCmd_ProvidingDateAndSyncingCurrentDate(t *testing.T) {
 	setupBasicConfig()
 
-	cmd := NewRootCmd(&MockConfigManager{}, RejectAllInputController{t: t}, &MockTogglApi{}, &MockJiraApi{})
+	cmd := NewRootCmd(&MockConfigManager{}, RejectAllInputController{t: t}, &MockTogglAPI{}, &MockJiraAPI{})
 	cmd.SetArgs([]string{"2020-05-22", "--current-date"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -34,7 +34,7 @@ func TestRootCmd_ErrorInitialisingConfig(t *testing.T) {
 	}
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, &MockTogglApi{}, &MockJiraApi{})
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, &MockTogglAPI{}, &MockJiraAPI{})
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -46,7 +46,7 @@ func TestRootCmd_InitConfigNotOk(t *testing.T) {
 	}
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, &MockTogglApi{}, &MockJiraApi{})
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, &MockTogglAPI{}, &MockJiraAPI{})
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -59,7 +59,7 @@ func TestRootCmd_InvalidConfig(t *testing.T) {
 
 	config.Reset()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, &MockTogglApi{}, &MockJiraApi{})
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, &MockTogglAPI{}, &MockJiraAPI{})
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -69,7 +69,7 @@ func TestRootCmd(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -96,12 +96,12 @@ func TestRootCmd(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -111,7 +111,7 @@ func TestRootCmd_NoTimeEntries(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -120,11 +120,11 @@ func TestRootCmd_NoTimeEntries(t *testing.T) {
 		},
 		TimeEntries: []api.TimeEntry{},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -134,7 +134,7 @@ func TestRootCmd_CurrentDate_NoTimeEntries(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -143,11 +143,11 @@ func TestRootCmd_CurrentDate_NoTimeEntries(t *testing.T) {
 		},
 		TimeEntries: []api.TimeEntry{},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"--current-date"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -157,7 +157,7 @@ func TestRootCmd_DryRun(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -184,12 +184,12 @@ func TestRootCmd_DryRun(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &RejectAllCallsJiraApi{t: t}
+	jiraAPI := &RejectAllCallsJiraAPI{t: t}
 
 	setupBasicConfig()
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -199,7 +199,7 @@ func TestRootCmd_DryRun_NoTimeEntries(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -208,11 +208,11 @@ func TestRootCmd_DryRun_NoTimeEntries(t *testing.T) {
 		},
 		TimeEntries: []api.TimeEntry{},
 	}
-	jiraApi := &RejectAllCallsJiraApi{t: t}
+	jiraAPI := &RejectAllCallsJiraAPI{t: t}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -222,14 +222,14 @@ func TestRootCmd_DryRun_ErrorFetchingUserDetails(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		MeError: errors.New("stub error"),
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -239,7 +239,7 @@ func TestRootCmd_DryRun_ErrorParsingSyncDate(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -247,11 +247,11 @@ func TestRootCmd_DryRun_ErrorParsingSyncDate(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2nd January 2006", "--dry-run"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -261,7 +261,7 @@ func TestRootCmd_DryRun_ErrorFetchingTimeEntries(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -270,11 +270,11 @@ func TestRootCmd_DryRun_ErrorFetchingTimeEntries(t *testing.T) {
 		},
 		TimeEntriesError: errors.New("stub error"),
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -284,7 +284,7 @@ func TestRootCmd_DryRun_ValidationFailed_EmptyDescription(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -298,11 +298,11 @@ func TestRootCmd_DryRun_ValidationFailed_EmptyDescription(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -312,7 +312,7 @@ func TestRootCmd_DryRun_ValidationFailed_OverheadWorkWithoutProjectId(t *testing
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -327,11 +327,11 @@ func TestRootCmd_DryRun_ValidationFailed_OverheadWorkWithoutProjectId(t *testing
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -341,7 +341,7 @@ func TestRootCmd_ErrorLoggingProjectWork_ShouldNotStopSync(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -356,13 +356,13 @@ func TestRootCmd_ErrorLoggingProjectWork_ShouldNotStopSync(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{
-		ApiError: errors.New("stub error"),
+	jiraAPI := &MockJiraAPI{
+		APIError: errors.New("stub error"),
 	}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -372,7 +372,7 @@ func TestRootCmd_ErrorLoggingOverheadWork_EntryWithoutProjectId_ShouldNotStopSyn
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -389,11 +389,11 @@ func TestRootCmd_ErrorLoggingOverheadWork_EntryWithoutProjectId_ShouldNotStopSyn
 		},
 		ProjectError: errors.New("stub error"),
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -403,7 +403,7 @@ func TestRootCmd_ErrorLoggingOverheadWork_ShouldNotStopSync(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -425,14 +425,14 @@ func TestRootCmd_ErrorLoggingOverheadWork_ShouldNotStopSync(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{
-		ApiError: errors.New("stub error"),
+	jiraAPI := &MockJiraAPI{
+		APIError: errors.New("stub error"),
 	}
 
 	setupBasicConfig()
 	config.SetOverheadKey("testing", "ENG-1001")
 
-	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -442,7 +442,7 @@ func TestRootCmd_LoggingOverheadWork_RequestOverheadKey(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -464,14 +464,14 @@ func TestRootCmd_LoggingOverheadWork_RequestOverheadKey(t *testing.T) {
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 	inputCtrl := &MockInputController{
 		TextInput: "ENG-1001",
 	}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, inputCtrl, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, inputCtrl, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -482,7 +482,7 @@ func TestRootCmd_LoggingOverheadWork_RequestOverheadKey_ErrorPersistingConfig(t 
 		InitOk:       true,
 		PersistError: errors.New("stub error persisting configuration"),
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -504,14 +504,14 @@ func TestRootCmd_LoggingOverheadWork_RequestOverheadKey_ErrorPersistingConfig(t 
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 	inputCtrl := &MockInputController{
 		TextInput: "ENG-1001",
 	}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, inputCtrl, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, inputCtrl, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.NotNil(t, err)
@@ -521,7 +521,7 @@ func TestRootCmd_LoggingOverheadWork_ErrorRequestingOverheadKey_ShouldNotStopSyn
 	configManager := &MockConfigManager{
 		InitOk: true,
 	}
-	togglApi := &MockTogglApi{
+	togglAPI := &MockTogglAPI{
 		Me: api.Me{
 			Data: api.PersonalInfo{
 				Email:    "tester@toggl-sync.com",
@@ -543,14 +543,14 @@ func TestRootCmd_LoggingOverheadWork_ErrorRequestingOverheadKey_ShouldNotStopSyn
 			},
 		},
 	}
-	jiraApi := &MockJiraApi{}
+	jiraAPI := &MockJiraAPI{}
 	inputCtrl := &MockInputController{
 		TextInputError: errors.New("stub error"),
 	}
 
 	setupBasicConfig()
 
-	cmd := NewRootCmd(configManager, inputCtrl, togglApi, jiraApi)
+	cmd := NewRootCmd(configManager, inputCtrl, togglAPI, jiraAPI)
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
@@ -573,7 +573,7 @@ func (mock MockConfigManager) Persist() error {
 	return mock.PersistError
 }
 
-type MockTogglApi struct {
+type MockTogglAPI struct {
 	Me               api.Me
 	MeError          error
 	TimeEntries      []api.TimeEntry
@@ -582,28 +582,28 @@ type MockTogglApi struct {
 	ProjectError     error
 }
 
-func (mock MockTogglApi) GetMe() (*api.Me, error) {
+func (mock MockTogglAPI) GetMe() (*api.Me, error) {
 	return &mock.Me, mock.MeError
 }
 
-func (mock MockTogglApi) GetTimeEntries(time.Time, time.Time) ([]api.TimeEntry, error) {
+func (mock MockTogglAPI) GetTimeEntries(time.Time, time.Time) ([]api.TimeEntry, error) {
 	return mock.TimeEntries, mock.TimeEntriesError
 }
 
-func (mock MockTogglApi) GetProjectById(int) (*api.Project, error) {
+func (mock MockTogglAPI) GetProjectById(int) (*api.Project, error) {
 	return &mock.Project, mock.ProjectError
 }
 
-type MockJiraApi struct {
-	ApiError error
+type MockJiraAPI struct {
+	APIError error
 }
 
-func (mock MockJiraApi) LogWork(string, time.Duration) error {
-	return mock.ApiError
+func (mock MockJiraAPI) LogWork(string, time.Duration) error {
+	return mock.APIError
 }
 
-func (mock MockJiraApi) LogWorkWithUserDescription(string, time.Duration, string) error {
-	return mock.ApiError
+func (mock MockJiraAPI) LogWorkWithUserDescription(string, time.Duration, string) error {
+	return mock.APIError
 }
 
 type RejectAllInputController struct {
@@ -620,16 +620,16 @@ func (ctrl RejectAllInputController) requestPassword(string) (input string, err 
 	return
 }
 
-type RejectAllCallsJiraApi struct {
+type RejectAllCallsJiraAPI struct {
 	t *testing.T
 }
 
-func (mock RejectAllCallsJiraApi) LogWork(string, time.Duration) (err error) {
+func (mock RejectAllCallsJiraAPI) LogWork(string, time.Duration) (err error) {
 	mock.t.Fatal("no API should be called")
 	return
 }
 
-func (mock RejectAllCallsJiraApi) LogWorkWithUserDescription(string, time.Duration, string) (err error) {
+func (mock RejectAllCallsJiraAPI) LogWorkWithUserDescription(string, time.Duration, string) (err error) {
 	mock.t.Fatal("no API should be called")
 	return
 }
@@ -637,10 +637,10 @@ func (mock RejectAllCallsJiraApi) LogWorkWithUserDescription(string, time.Durati
 func setupBasicConfig() {
 	config.Reset()
 	viper.SetConfigFile("test-config.yml")
-	config.Set(config.TogglServerUrl, "http://localhost/toggl")
+	config.Set(config.TogglServerURL, "http://localhost/toggl")
 	config.Set(config.TogglUsername, "TogglUser")
 	config.Set(config.TogglPassword, "TogglPassword")
-	config.Set(config.JiraServerUrl, "http://localhost/jira")
+	config.Set(config.JiraServerURL, "http://localhost/jira")
 	config.Set(config.JiraUsername, "JiraUser")
 	config.Set(config.JiraPassword, "JiraPassword")
 	config.Set(config.JiraProjectKey, "ENG")
