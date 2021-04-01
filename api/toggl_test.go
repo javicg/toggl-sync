@@ -67,6 +67,14 @@ func TestTogglApi_GetMe_ErrorWhenResponseHasUnexpectedFormat(t *testing.T) {
 	assert.NotNilf(t, err, "JSON marshalling errors should be returned to the client")
 }
 
+func TestTogglApi_GetMe_ErrorWhenRequestErrors(t *testing.T) {
+	config.SetTogglServerUrl("%#2")
+
+	togglApi := NewTogglApi()
+	_, err := togglApi.GetMe()
+	assert.NotNil(t, err, "Request errors (e.g. misconfiguration) should be returned to the client")
+}
+
 func TestTogglApi_GetTimeEntries(t *testing.T) {
 	expectedTimeEntries := []TimeEntry{
 		{
@@ -137,6 +145,16 @@ func TestTogglApi_GetTimeEntries_ErrorWhenResponseHasUnexpectedFormat(t *testing
 	assert.NotNilf(t, err, "JSON marshalling errors should be returned to the client")
 }
 
+func TestTogglApi_GetTimeEntries_ErrorWhenRequestErrors(t *testing.T) {
+	config.SetTogglServerUrl("%#2")
+
+	togglApi := NewTogglApi()
+	startDate, _ := time.Parse("2006-01-02", "2020-05-08")
+	endDate, _ := time.Parse("2006-01-02", "2020-05-09")
+	_, err := togglApi.GetTimeEntries(startDate, endDate)
+	assert.NotNil(t, err, "Request errors (e.g. misconfiguration) should be returned to the client")
+}
+
 func TestTogglApi_GetProjectById(t *testing.T) {
 	projectId := 10
 	expectedProject := Project{
@@ -198,4 +216,12 @@ func TestTogglApi_GetProjectById_ErrorWhenResponseHasUnexpectedFormat(t *testing
 	togglApi := NewTogglApi()
 	_, err := togglApi.GetProjectById(projectId)
 	assert.NotNilf(t, err, "JSON marshalling errors should be returned to the client")
+}
+
+func TestTogglApi_GetProjectById_ErrorWhenRequestErrors(t *testing.T) {
+	config.SetTogglServerUrl("%#2")
+
+	togglApi := NewTogglApi()
+	_, err := togglApi.GetProjectById(10)
+	assert.NotNil(t, err, "Request errors (e.g. misconfiguration) should be returned to the client")
 }

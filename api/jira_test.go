@@ -51,6 +51,14 @@ func TestJiraApi_LogWork_ErrorWhenRequestFails(t *testing.T) {
 	assert.NotNilf(t, err, "API errors should be returned to the client")
 }
 
+func TestJiraApi_LogWork_ErrorWhenRequestErrors(t *testing.T) {
+	config.SetJiraServerUrl("%#2")
+
+	jiraApi := NewJiraApi()
+	err := jiraApi.LogWork("EXAMPLE-1234", time.Duration(60)*time.Second)
+	assert.NotNil(t, err, "Request errors (e.g. misconfiguration) should be returned to the client")
+}
+
 func TestJiraApi_LogWorkWithUserDescription(t *testing.T) {
 	ticket := "EXAMPLE-1234"
 	expectedEntry := workLogEntry{
