@@ -160,9 +160,10 @@ func validateEntry(entry api.TimeEntry) (ok bool, message string) {
 		return false, "Found entry without a description. All entries must contain a description.\n"
 	} else if !isJiraTicket(entry) && entry.Pid == 0 {
 		return false, fmt.Sprintf("Entry [%s] does not seem to be a Jira ticket and doesn't have a Toggl project assigned.\n", entry.Description)
-	} else {
-		return true, ""
+	} else if entry.Duration < 0 {
+		return false, fmt.Sprintf("Entry [%s] has a negative duration. If it's still in progress, you have to stop the task first.\n", entry.Description)
 	}
+	return true, ""
 }
 
 func isJiraTicket(entry api.TimeEntry) bool {

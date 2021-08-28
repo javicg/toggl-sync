@@ -362,6 +362,36 @@ func TestRootCmd_DryRun_ValidationFailed_OverheadWorkWithoutProjectId(t *testing
 	assert.NotNil(t, err)
 }
 
+func TestRootCmd_DryRun_ValidationFailed_NegativeDuration(t *testing.T) {
+	configManager := &MockConfigManager{
+		InitOk: true,
+	}
+	togglAPI := &MockTogglAPI{
+		Me: api.Me{
+			Data: api.PersonalInfo{
+				Email:    "tester@toggl-sync.com",
+				Fullname: "TogglSync Tester",
+			},
+		},
+		TimeEntries: []api.TimeEntry{
+			{
+				Id:          1,
+				Pid:         10,
+				Duration:    -1630161422,
+				Description: "New project (still working on it!)",
+			},
+		},
+	}
+	jiraAPI := &MockJiraAPI{}
+
+	setupBasicConfig()
+
+	cmd := NewRootCmd(configManager, RejectAllInputController{t: t}, togglAPI, jiraAPI)
+	cmd.SetArgs([]string{"2020-05-22", "--dry-run"})
+	err := cmd.Execute()
+	assert.NotNil(t, err)
+}
+
 func TestRootCmd_ErrorLoggingProjectWork_ShouldNotStopSync(t *testing.T) {
 	configManager := &MockConfigManager{
 		InitOk: true,
