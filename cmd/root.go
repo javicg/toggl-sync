@@ -98,6 +98,7 @@ func sync(inputCtrl inputController, togglAPI api.TogglAPI, jiraAPI api.JiraAPI,
 		return err
 	}
 
+	entries = summarize(entries)
 	printSummary(syncDate, entries)
 
 	ok, message := validateEntries(entries)
@@ -166,6 +167,35 @@ func validateEntry(entry api.TimeEntry) (ok bool, message string) {
 
 func isJiraTicket(entry api.TimeEntry) bool {
 	return strings.HasPrefix(entry.Description, config.Get(config.JiraProjectKey))
+}
+
+func summarize(entries []api.TimeEntry) []api.TimeEntry {
+	type CacheKey struct {
+		Pid         int
+		Description string
+	}
+
+	cache := make(map[CacheKey]api.TimeEntry)
+	for _, entry := range entries {
+		key := CacheKey{
+			Pid:         entry.Pid,
+			Description: entry.Description,
+		}
+		if cachedEntry, ok := cache[key]; ok {
+			cache[key] = api.TimeEntry{
+				Pid:         cachedEntry.Pid,
+				Duration:    cachedEntry.Duration + entry.Duration,
+				Description: entry.Description,
+			}
+		} else {
+			cache[key] = entry
+		}
+	}
+	var summary []api.TimeEntry
+	for _, entry := range cache {
+		summary = append(summary, entry)
+	}
+	return summary
 }
 
 func printSummary(syncDate string, entries []api.TimeEntry) {

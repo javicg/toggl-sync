@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"github.com/javicg/toggl-sync/api"
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/viper"
@@ -85,8 +86,26 @@ func TestRootCmd(t *testing.T) {
 			},
 			{
 				Id:          2,
+				Pid:         10,
 				Duration:    240,
 				Description: "ENG-1002",
+			},
+			{
+				Id:          3,
+				Pid:         10,
+				Duration:    140,
+				Description: "ENG-1002",
+			},
+			{
+				Id:          4,
+				Duration:    360,
+				Description: "ENG-1003",
+			},
+			{
+				Id:          5,
+				Pid:         10,
+				Duration:    444,
+				Description: "ENG-1003",
 			},
 		},
 		Project: api.Project{
@@ -105,6 +124,12 @@ func TestRootCmd(t *testing.T) {
 	cmd.SetArgs([]string{"2020-05-22"})
 	err := cmd.Execute()
 	assert.Nil(t, err)
+
+	assert.NoError(t, jiraAPI.VerifyWorkLogged("Writing toggl-sync tests", 120))
+	assert.NoError(t, jiraAPI.VerifyWorkLogged("ENG-1002", 380))
+	assert.NoError(t, jiraAPI.VerifyWorkLogged("ENG-1003", 360))
+	assert.NoError(t, jiraAPI.VerifyWorkLogged("ENG-1003", 444))
+	assert.NoError(t, jiraAPI.VerifyNoOtherWorkLogged())
 }
 
 func TestRootCmd_NoTimeEntries(t *testing.T) {
@@ -594,16 +619,57 @@ func (mock MockTogglAPI) GetProjectById(int) (*api.Project, error) {
 	return &mock.Project, mock.ProjectError
 }
 
+type LoggedEntry struct {
+	Description string
+	Duration    time.Duration
+}
+
 type MockJiraAPI struct {
-	APIError error
+	LoggedWork []LoggedEntry
+	APIError   error
 }
 
-func (mock MockJiraAPI) LogWork(string, time.Duration) error {
+func (mock *MockJiraAPI) LogWork(description string, duration time.Duration) error {
+	mock.trackLog(description, duration)
 	return mock.APIError
 }
 
-func (mock MockJiraAPI) LogWorkWithUserDescription(string, time.Duration, string) error {
+func (mock *MockJiraAPI) LogWorkWithUserDescription(_ string, duration time.Duration, description string) error {
+	mock.trackLog(description, duration)
 	return mock.APIError
+}
+
+func (mock *MockJiraAPI) trackLog(description string, duration time.Duration) {
+	mock.LoggedWork = append(mock.LoggedWork, LoggedEntry{
+		Description: description,
+		Duration:    duration,
+	})
+}
+
+func (mock *MockJiraAPI) VerifyWorkLogged(description string, duration int) error {
+	expectedEntry := LoggedEntry{
+		Description: description,
+		Duration:    time.Duration(duration) * time.Second,
+	}
+	for i, entry := range mock.LoggedWork {
+		if entry == expectedEntry {
+			mock.removeFromLog(i)
+			return nil
+		}
+	}
+	return fmt.Errorf("work log does not contain [%s - %d]", description, duration)
+}
+
+func (mock *MockJiraAPI) removeFromLog(idx int) {
+	mock.LoggedWork[idx] = mock.LoggedWork[len(mock.LoggedWork)-1]
+	mock.LoggedWork = mock.LoggedWork[:len(mock.LoggedWork)-1]
+}
+
+func (mock *MockJiraAPI) VerifyNoOtherWorkLogged() error {
+	if len(mock.LoggedWork) == 0 {
+		return nil
+	}
+	return fmt.Errorf("there were unexpected entries logged: %s\n", mock.LoggedWork)
 }
 
 type RejectAllInputController struct {
