@@ -104,7 +104,7 @@ func sync(inputCtrl inputController, togglAPI api.TogglAPI, jiraAPI api.JiraAPI,
 	ok, message := validateEntries(entries)
 	if !ok {
 		log.Print("Found issues during validation:")
-		fmt.Print(message)
+		log.Print(message)
 		log.Print("Please, correct the time entries above and try again.")
 		return fmt.Errorf("validation failed")
 	}
@@ -126,7 +126,7 @@ func printUserDetails(togglAPI api.TogglAPI) error {
 	}
 
 	log.Print("User details:")
-	fmt.Printf("Name = %s, Email = %s\n", me.Data.Fullname, me.Data.Email)
+	log.Printf("Name = %s, Email = %s\n", me.Data.Fullname, me.Data.Email)
 	return nil
 }
 
@@ -202,7 +202,7 @@ func summarize(entries []api.TimeEntry) []api.TimeEntry {
 func printSummary(syncDate string, entries []api.TimeEntry) {
 	log.Printf("== Time Entries Summary (%s) ==", syncDate)
 	for i := range entries {
-		fmt.Printf("Entry: %s || Duration (s): %d\n", entries[i].Description, entries[i].Duration)
+		log.Printf("Entry: %s || Duration (s): %d\n", entries[i].Description, entries[i].Duration)
 	}
 }
 
