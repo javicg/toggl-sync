@@ -2,12 +2,20 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestGet(t *testing.T) {
 	viper.Set(TogglUsername, "togglUser")
 	assertSame(t, Get(TogglUsername), "togglUser")
+}
+
+func TestGetSlice(t *testing.T) {
+	input := "ENG,MGMT"
+	viper.Set(JiraProjectKey, strings.Split(input, ","))
+	assertSameSlice(t, GetSlice(JiraProjectKey), []string{"ENG", "MGMT"})
 }
 
 func TestSet(t *testing.T) {
@@ -55,8 +63,14 @@ func TestFileUsed(t *testing.T) {
 	assertSame(t, FileUsed(), "test-config.yml")
 }
 
-func assertSame(t *testing.T, first string, second string) {
+func assertSame(t *testing.T, first interface{}, second interface{}) {
 	if first != second {
+		t.Errorf("Expected [%s] to equal [%s] but it did not", first, second)
+	}
+}
+
+func assertSameSlice(t *testing.T, first []string, second []string) {
+	if !reflect.DeepEqual(first, second) {
 		t.Errorf("Expected [%s] to equal [%s] but it did not", first, second)
 	}
 }

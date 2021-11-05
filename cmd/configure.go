@@ -40,27 +40,27 @@ func configure(configManager config.Manager, inputCtrl inputController) error {
 
 func updateConfiguration(inputCtrl inputController) (err error) {
 	config.Set(config.TogglServerURL, "https://api.track.toggl.com/api/v8")
-	err = saveSettingAs(inputCtrl, "Toggl username", config.TogglUsername, false)
+	err = saveSingleValueSettingAs(inputCtrl, "Toggl username", config.TogglUsername, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Toggl password", config.TogglPassword, true)
+	err = saveSingleValueSettingAs(inputCtrl, "Toggl password", config.TogglPassword, true)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira server url", config.JiraServerURL, false)
+	err = saveSingleValueSettingAs(inputCtrl, "Jira server url", config.JiraServerURL, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira username", config.JiraUsername, false)
+	err = saveSingleValueSettingAs(inputCtrl, "Jira username", config.JiraUsername, false)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira password", config.JiraPassword, true)
+	err = saveSingleValueSettingAs(inputCtrl, "Jira password", config.JiraPassword, true)
 	if err != nil {
 		return
 	}
-	err = saveSettingAs(inputCtrl, "Jira project key", config.JiraProjectKey, false)
+	err = saveMultiValueSettingAs(inputCtrl, "Jira project key(s)", config.JiraProjectKey, false)
 	if err != nil {
 		return
 	}
@@ -72,11 +72,20 @@ func updateConfiguration(inputCtrl inputController) (err error) {
 	return
 }
 
-func saveSettingAs(inputCtrl inputController, inputName string, key string, isPassword bool) error {
+func saveMultiValueSettingAs(inputCtrl inputController, inputName string, key string, isPassword bool) error {
+	existingValue := strings.Join(config.GetSlice(key), ",")
+	return saveSettingAs(inputCtrl, inputName, key, existingValue, isPassword)
+}
+
+func saveSingleValueSettingAs(inputCtrl inputController, inputName string, key string, isPassword bool) error {
 	existingValue := config.Get(key)
+	return saveSettingAs(inputCtrl, inputName, key, existingValue, isPassword)
+}
+
+func saveSettingAs(inputCtrl inputController, inputName string, key string, existingValue string, isPassword bool) error {
 	input, err := requestInput(inputCtrl, inputName, existingValue, isPassword)
 	if err == nil && input != "" {
-		config.Set(key, input)
+		config.Set(key, strings.Split(input, ","))
 	}
 	return err
 }

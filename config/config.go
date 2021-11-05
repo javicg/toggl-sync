@@ -27,8 +27,13 @@ func Get(key string) string {
 	return viper.GetString(key)
 }
 
+// GetSlice returns the current values associated with the key in the config map (if any exist)
+func GetSlice(key string) []string {
+	return viper.GetStringSlice(key)
+}
+
 // Set overrides the value of the key in the config map
-func Set(key string, value string) {
+func Set(key string, value interface{}) {
 	viper.Set(key, value)
 }
 

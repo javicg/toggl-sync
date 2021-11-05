@@ -105,7 +105,7 @@ func TestRootCmd(t *testing.T) {
 				Id:          5,
 				Pid:         10,
 				Duration:    444,
-				Description: "ENG-1003",
+				Description: "MGMT-1001",
 			},
 		},
 		Project: api.Project{
@@ -128,7 +128,7 @@ func TestRootCmd(t *testing.T) {
 	assert.NoError(t, jiraAPI.VerifyWorkLogged("Writing toggl-sync tests", 120))
 	assert.NoError(t, jiraAPI.VerifyWorkLogged("ENG-1002", 380))
 	assert.NoError(t, jiraAPI.VerifyWorkLogged("ENG-1003", 360))
-	assert.NoError(t, jiraAPI.VerifyWorkLogged("ENG-1003", 444))
+	assert.NoError(t, jiraAPI.VerifyWorkLogged("MGMT-1001", 444))
 	assert.NoError(t, jiraAPI.VerifyNoOtherWorkLogged())
 }
 
@@ -739,5 +739,5 @@ func setupBasicConfig() {
 	config.Set(config.JiraServerURL, "http://localhost/jira")
 	config.Set(config.JiraUsername, "JiraUser")
 	config.Set(config.JiraPassword, "JiraPassword")
-	config.Set(config.JiraProjectKey, "ENG")
+	config.Set(config.JiraProjectKey, []string{"ENG", "MGMT"})
 }

@@ -79,7 +79,7 @@ func validateConfig() error {
 			config.Get(config.JiraServerURL) != "" &&
 			config.Get(config.JiraUsername) != "" &&
 			config.Get(config.JiraPassword) != "" &&
-			config.Get(config.JiraProjectKey) != ""
+			len(config.GetSlice(config.JiraProjectKey)) != 0
 
 	if !isValid {
 		return fmt.Errorf("configuration file is invalid! Please, run 'configure' to create a new configuration file")
@@ -167,7 +167,11 @@ func validateEntry(entry api.TimeEntry) (ok bool, message string) {
 }
 
 func isJiraTicket(entry api.TimeEntry) bool {
-	return strings.HasPrefix(entry.Description, config.Get(config.JiraProjectKey))
+	match := false
+	for _, projectKey := range config.GetSlice(config.JiraProjectKey) {
+		match = match || strings.HasPrefix(entry.Description, projectKey)
+	}
+	return match
 }
 
 func summarize(entries []api.TimeEntry) []api.TimeEntry {
