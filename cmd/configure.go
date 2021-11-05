@@ -74,18 +74,18 @@ func updateConfiguration(inputCtrl inputController) (err error) {
 
 func saveMultiValueSettingAs(inputCtrl inputController, inputName string, key string, isPassword bool) error {
 	existingValue := strings.Join(config.GetSlice(key), ",")
-	return saveSettingAs(inputCtrl, inputName, key, existingValue, isPassword)
+	input, err := requestInput(inputCtrl, inputName, existingValue, isPassword)
+	if err == nil && input != "" {
+		config.Set(key, strings.Split(input, ","))
+	}
+	return err
 }
 
 func saveSingleValueSettingAs(inputCtrl inputController, inputName string, key string, isPassword bool) error {
 	existingValue := config.Get(key)
-	return saveSettingAs(inputCtrl, inputName, key, existingValue, isPassword)
-}
-
-func saveSettingAs(inputCtrl inputController, inputName string, key string, existingValue string, isPassword bool) error {
 	input, err := requestInput(inputCtrl, inputName, existingValue, isPassword)
 	if err == nil && input != "" {
-		config.Set(key, strings.Split(input, ","))
+		config.Set(key, input)
 	}
 	return err
 }

@@ -43,7 +43,7 @@ func TestConfigureCmd(t *testing.T) {
 	assert.Equal(t, "value", config.Get(config.JiraUsername))
 	assert.Equal(t, "secret", config.Get(config.JiraPassword))
 	assert.Equal(t, "value", config.Get(config.JiraServerURL))
-	assert.Equal(t, "value", config.Get(config.JiraProjectKey))
+	assert.Equal(t, "value", config.GetSlice(config.JiraProjectKey)[0])
 }
 
 func TestConfigureCmd_TrimInputValues(t *testing.T) {
@@ -59,7 +59,7 @@ func TestConfigureCmd_TrimInputValues(t *testing.T) {
 	assert.Equal(t, "value", config.Get(config.JiraUsername))
 	assert.Equal(t, "secret", config.Get(config.JiraPassword))
 	assert.Equal(t, "value", config.Get(config.JiraServerURL))
-	assert.Equal(t, "value", config.Get(config.JiraProjectKey))
+	assert.Equal(t, "value", config.GetSlice(config.JiraProjectKey)[0])
 }
 
 func TestConfigureCmd_OverrideExistingValues(t *testing.T) {
@@ -82,7 +82,7 @@ func TestConfigureCmd_OverrideExistingValues(t *testing.T) {
 	assert.Equal(t, "updatedValue", config.Get(config.JiraUsername))
 	assert.Equal(t, "updatedSecret", config.Get(config.JiraPassword))
 	assert.Equal(t, "updatedValue", config.Get(config.JiraServerURL))
-	assert.Equal(t, "updatedValue", config.Get(config.JiraProjectKey))
+	assert.Equal(t, "updatedValue", config.GetSlice(config.JiraProjectKey)[0])
 }
 
 func TestConfigureCmd_PreserveExistingValuesOnEmptyInput(t *testing.T) {
@@ -105,7 +105,7 @@ func TestConfigureCmd_PreserveExistingValuesOnEmptyInput(t *testing.T) {
 	assert.Equal(t, "updatedValue", config.Get(config.JiraUsername))
 	assert.Equal(t, "secret", config.Get(config.JiraPassword))
 	assert.Equal(t, "updatedValue", config.Get(config.JiraServerURL))
-	assert.Equal(t, "updatedValue", config.Get(config.JiraProjectKey))
+	assert.Equal(t, "updatedValue", config.GetSlice(config.JiraProjectKey)[0])
 }
 
 func TestConfigureCmd_OverrideOverheadKeys(t *testing.T) {
