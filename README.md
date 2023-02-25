@@ -6,14 +6,14 @@
 
 Application to synchronize Toggl entries to Jira.
 
-At our company, logging work on Jira helps us visualize if we are focusing on the right things,
+Logging work on Jira helps visualize if we are focusing on the right things,
 or if we are spending too much time on other work (meetings, support, etc).
 
-Most of us use [Toggl](https://toggl.com/) for time tracking...
+If you use [Toggl](https://toggl.com/) for time tracking...
 
 ![Toggl UI](.github/assets/toggl-ui.png)
 
-... but then have to spend time updating our work logs on Jira, and this is not fun to do.
+... you then have to spend time updating your work logs on Jira, and this is not fun to do.
 
 This small application helps synchronizing all those Toggl entries to Jira, following very simple naming conventions.
 
@@ -24,7 +24,7 @@ Time entries fall into 2 categories, depending on their `Description`:
 This is the naming convention of Jira tickets.
 - _Overhead_ work: the `Description` can be anything (e.g. `Team catch-up`).
 These are normally grouped together under some category (e.g. `Meetings`).
-At our company, we have _overhead tickets_ to track the time spent on these type of sessions.
+These _overhead tickets_ are helpful to track the time spent on these type of sessions.
 
 _Project_ work can be logged directly, but _Overhead_ work needs extra input from the user
 (i.e. which Jira ticket should be used to log work against).
