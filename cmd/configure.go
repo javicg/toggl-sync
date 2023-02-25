@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 // NewConfigureCmd creates a new Cobra Command that helps configuring the application

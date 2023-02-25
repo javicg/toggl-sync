@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestGet(t *testing.T) {

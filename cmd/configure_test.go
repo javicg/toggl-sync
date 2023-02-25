@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/javicg/toggl-sync/config"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestConfigureCmd_ErrorInitialisingConfig(t *testing.T) {

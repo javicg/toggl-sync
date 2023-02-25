@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/javicg/toggl-sync/api"
-	"github.com/javicg/toggl-sync/config"
-	"github.com/spf13/cobra"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/javicg/toggl-sync/api"
+	"github.com/javicg/toggl-sync/config"
+	"github.com/spf13/cobra"
 )
 
 // NewRootCmd creates a new Cobra Command that acts as entry point for all operations
