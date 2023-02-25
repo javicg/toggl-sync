@@ -1,12 +1,13 @@
 package api
 
 import (
-	"github.com/javicg/toggl-sync/config"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/javicg/toggl-sync/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTogglApi_GetMe(t *testing.T) {

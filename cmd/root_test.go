@@ -3,12 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/javicg/toggl-sync/api"
 	"github.com/javicg/toggl-sync/config"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestRootCmd_MissingDate(t *testing.T) {

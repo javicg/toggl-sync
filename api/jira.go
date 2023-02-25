@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/javicg/toggl-sync/config"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/javicg/toggl-sync/config"
 )
 
 const workLogEntryCommentFooter = "Added automatically by toggl-sync"

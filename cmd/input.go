@@ -3,9 +3,10 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/term"
 	"os"
 	"syscall"
+
+	"golang.org/x/term"
 )
 
 type inputController interface {

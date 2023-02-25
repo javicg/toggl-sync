@@ -1,10 +1,11 @@
 package main
 
 import (
+	"log"
+
 	"github.com/javicg/toggl-sync/api"
 	"github.com/javicg/toggl-sync/cmd"
 	"github.com/javicg/toggl-sync/config"
-	"log"
 )
 
 func main() {

@@ -3,10 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/javicg/toggl-sync/config"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/javicg/toggl-sync/config"
 )
 
 // TogglAPI is the Toggl API client contract listing all supported calls.

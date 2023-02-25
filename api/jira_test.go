@@ -2,12 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/javicg/toggl-sync/config"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/javicg/toggl-sync/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestJiraApi_LogWork(t *testing.T) {
